@@ -2,13 +2,13 @@ package main
 
 import "fmt"
 
-func addNumbers(numbers ...int) int {
-	total := 0
-	for _, number := range numbers {
-		total += number
+func canIDrink(age int) bool {
+	if koreanAge := age + 2; koreanAge > 18 {
+		return true
 	}
-	return total
+	return false
 }
+
 func main() {
-	fmt.Println(addNumbers(1, 2, 3, 4, 5))
+	fmt.Println(canIDrink(16))
 }
