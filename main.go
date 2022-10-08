@@ -1,18 +1,14 @@
 package main
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
 
-func lengthAndUpper(name string) (length int, upperLetters string) {
-	defer fmt.Println("I'm Done")
-	length = len(name)
-	upperLetters = strings.ToUpper(name)
-	return
+func addNumbers(numbers ...int) int {
+	total := 0
+	for _, number := range numbers {
+		total += number
+	}
+	return total
 }
-
 func main() {
-	length, upperLetters := lengthAndUpper("Hello")
-	fmt.Println(length, upperLetters)
+	fmt.Println(addNumbers(1, 2, 3, 4, 5))
 }
