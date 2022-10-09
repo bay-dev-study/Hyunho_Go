@@ -1,16 +1,21 @@
 package main
 
-import "fmt"
-
-func canIDrink(age int) bool {
-	switch koreanAge := age + 2; {
-	case koreanAge > 18:
-		return true
-	default:
-		return false
-	}
-}
+import (
+	"Hyunho_Go/banking"
+	"fmt"
+	"log"
+)
 
 func main() {
-	fmt.Println(canIDrink(18))
+	bankAccount := banking.NewAccount("Hyunho", 100)
+	fmt.Println(bankAccount.Owner(), bankAccount.Balance())
+	fmt.Println(bankAccount)
+	bankAccount.Deposit(10)
+	fmt.Println(bankAccount)
+	bankAccount.Withdraw(70)
+	fmt.Println(bankAccount)
+	err := bankAccount.Withdraw(50)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
