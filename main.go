@@ -1,39 +1,28 @@
 package main
 
 import (
-	"Hyunho_Go/dictionary"
-	"log"
+	"Hyunho_Go/urlcheck"
+	"fmt"
 )
 
-const PASS_ERROR = false
-const CHECK_ERROR = true
-
-func errCheck(err error, flag bool) {
-	if err != nil && flag == CHECK_ERROR {
-		log.Fatalln(err)
-	}
-}
-
 func main() {
-	dct := dictionary.Dictionary{}
-	dct.Add("Hello", "Greeting")
-	dct.Add("Apple", "Company")
-	dct.Add("Ant", "Insect")
-	dct.Print()
-
-	err := dct.Add("Apple", "Fruit") // raise error
-	errCheck(err, PASS_ERROR)
-
-	dct.Update("Apple", "Fruit")
-	dct.Print()
-
-	err = dct.Update("Samsung", "Company") // raise error
-	errCheck(err, PASS_ERROR)
-
-	dct.Delete("Apple")
-
-	_, err = dct.Search("Apple") // raise error
-	errCheck(err, PASS_ERROR)
-
-	dct.Print()
+	urls := []string{
+		"https://www.airbnb.com/",
+		"https://www.google.com/",
+		"https://www.amazon.com/",
+		"https://www.reddit.com/",
+		"https://www.google.com/",
+		"https://soundcloud.com/",
+		"https://www.facebook.com/",
+		"https://www.instagram.com/",
+		"https://academy.nomadcoders.co/",
+	}
+	c := make(chan urlcheck.UrlStatus)
+	for _, url := range urls {
+		go urlcheck.HitURL(url, c)
+	}
+	for range urls {
+		result := <-c
+		fmt.Println(result)
+	}
 }
