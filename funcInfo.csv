@@ -1,0 +1,279 @@
+packageName,url,funcInfo
+http (google.golang.org/api/transport/http),/google.golang.org/api/transport/http,"func NewClient(ctx context.Context, opts ...option.ClientOption) (*http.Client, string, error)"
+http (google.golang.org/api/transport/http),/google.golang.org/api/transport/http,"func NewTransport(ctx context.Context, base http.RoundTripper, opts ...option.ClientOption) (http.RoundTripper, error)"
+fs (github.com/rakyll/statik/fs),/github.com/rakyll/statik/fs,func IsDefaultNamespace(assetNamespace string) bool
+fs (github.com/rakyll/statik/fs),/github.com/rakyll/statik/fs,"func New() (http.FileSystem, error)"
+fs (github.com/rakyll/statik/fs),/github.com/rakyll/statik/fs,"func NewWithNamespace(assetNamespace string) (http.FileSystem, error)"
+fs (github.com/rakyll/statik/fs),/github.com/rakyll/statik/fs,"func ReadFile(hfs http.FileSystem, name string) ([]byte, error)"
+fs (github.com/rakyll/statik/fs),/github.com/rakyll/statik/fs,func Register(data string)
+fs (github.com/rakyll/statik/fs),/github.com/rakyll/statik/fs,"func RegisterWithNamespace(assetNamespace string, data string)"
+fs (github.com/rakyll/statik/fs),/github.com/rakyll/statik/fs,"func Walk(hfs http.FileSystem, root string, walkFn filepath.WalkFunc) error"
+http (github.com/go-git/go-git/v5/plumbing/transport/http),/github.com/go-git/go-git/v5/plumbing/transport/http,func NewClient(c *http.Client) transport.Transport
+http (github.com/go-git/go-git/v5/plumbing/transport/http),/github.com/go-git/go-git/v5/plumbing/transport/http,func NewErr(r *http.Response) error
+ctxhttp (golang.org/x/net/context/ctxhttp),/golang.org/x/net/context/ctxhttp,"func Do(ctx context.Context, client *http.Client, req *http.Request) (*http.Response, error)"
+ctxhttp (golang.org/x/net/context/ctxhttp),/golang.org/x/net/context/ctxhttp,"func Get(ctx context.Context, client *http.Client, url string) (*http.Response, error)"
+ctxhttp (golang.org/x/net/context/ctxhttp),/golang.org/x/net/context/ctxhttp,"func Head(ctx context.Context, client *http.Client, url string) (*http.Response, error)"
+ctxhttp (golang.org/x/net/context/ctxhttp),/golang.org/x/net/context/ctxhttp,"func Post(ctx context.Context, client *http.Client, url string, bodyType string, body io.Reader) (*http.Response, error)"
+ctxhttp (golang.org/x/net/context/ctxhttp),/golang.org/x/net/context/ctxhttp,"func PostForm(ctx context.Context, client *http.Client, url string, data url.Values) (*http.Response, error)"
+http (gopkg.in/src-d/go-git.v4/plumbing/transport/http),/gopkg.in/src-d/go-git.v4/plumbing/transport/http,func NewClient(c *http.Client) transport.Transport
+http (gopkg.in/src-d/go-git.v4/plumbing/transport/http),/gopkg.in/src-d/go-git.v4/plumbing/transport/http,func NewErr(r *http.Response) error
+http (github.com/openzipkin/zipkin-go/reporter/http),/github.com/openzipkin/zipkin-go/reporter/http,"func NewReporter(url string, opts ...ReporterOption) reporter.Reporter"
+http (goa.design/goa/v3/http),/goa.design/goa/v3/http,"func ErrDecodingError(svc, m string, err error) error"
+http (goa.design/goa/v3/http),/goa.design/goa/v3/http,"func ErrEncodingError(svc, m string, err error) error"
+http (goa.design/goa/v3/http),/goa.design/goa/v3/http,"func ErrInvalidResponse(svc, m string, code int, body string) error"
+http (goa.design/goa/v3/http),/goa.design/goa/v3/http,"func ErrInvalidType(svc, m, expected string, actual interface{}) error"
+http (goa.design/goa/v3/http),/goa.design/goa/v3/http,"func ErrInvalidURL(svc, m, u string, err error) error"
+http (goa.design/goa/v3/http),/goa.design/goa/v3/http,"func ErrRequestError(svc, m string, err error) error"
+http (goa.design/goa/v3/http),/goa.design/goa/v3/http,"func ErrValidationError(svc, m string, err error) error"
+http (goa.design/goa/v3/http),/goa.design/goa/v3/http,"func ErrorEncoder(encoder func(context.Context, http.ResponseWriter) Encoder, formatter func(ctx context.Context, err error) Statuser) func(context.Context, http.ResponseWriter, error) error"
+http (goa.design/goa/v3/http),/goa.design/goa/v3/http,"func Replace(old, nw string, h http.Handler) http.Handler"
+http (goa.design/goa/v3/http),/goa.design/goa/v3/http,"func SetContentType(w http.ResponseWriter, ct string)"
+http (net/http),/net/http,func CanonicalHeaderKey(s string) string
+http (net/http),/net/http,func DetectContentType(data []byte) string
+http (net/http),/net/http,"func Error(w ResponseWriter, error string, code int)"
+http (net/http),/net/http,"func Handle(pattern string, handler Handler)"
+http (net/http),/net/http,"func HandleFunc(pattern string, handler func(ResponseWriter, *Request))"
+http (net/http),/net/http,"func ListenAndServe(addr string, handler Handler) error"
+http (net/http),/net/http,"func ListenAndServeTLS(addr, certFile, keyFile string, handler Handler) error"
+http (net/http),/net/http,"func MaxBytesReader(w ResponseWriter, r io.ReadCloser, n int64) io.ReadCloser"
+http (net/http),/net/http,"func NotFound(w ResponseWriter, r *Request)"
+http (net/http),/net/http,"func ParseHTTPVersion(vers string) (major, minor int, ok bool)"
+http (net/http),/net/http,"func ParseTime(text string) (t time.Time, err error)"
+http (net/http),/net/http,"func ProxyFromEnvironment(req *Request) (*url.URL, error)"
+http (net/http),/net/http,"func ProxyURL(fixedURL *url.URL) func(*Request) (*url.URL, error)"
+http (net/http),/net/http,"func Redirect(w ResponseWriter, r *Request, url string, code int)"
+http (net/http),/net/http,"func Serve(l net.Listener, handler Handler) error"
+http (net/http),/net/http,"func ServeContent(w ResponseWriter, req *Request, name string, modtime time.Time, content io.ReadSeeker)"
+http (net/http),/net/http,"func ServeFile(w ResponseWriter, r *Request, name string)"
+http (net/http),/net/http,"func ServeTLS(l net.Listener, handler Handler, certFile, keyFile string) error"
+http (net/http),/net/http,"func SetCookie(w ResponseWriter, cookie *Cookie)"
+http (net/http),/net/http,func StatusText(code int) string
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,func AuditAnnotationsFromLatencyTrackers(ctx context.Context) map[string]string
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func AuditIDFrom(ctx context.Context) (types.UID, bool)"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,func GetAuditIDTruncated(ctx context.Context) string
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func NamespaceFrom(ctx context.Context) (string, bool)"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,func NamespaceValue(ctx context.Context) string
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,func NewContext() context.Context
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,func NewDefaultContext() context.Context
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func ReceivedTimestampFrom(ctx context.Context) (time.Time, bool)"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func TrackResponseWriteLatency(ctx context.Context, d time.Duration)"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func TrackSerializeResponseObjectLatency(ctx context.Context, f func())"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func TrackStorageLatency(ctx context.Context, d time.Duration)"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func TrackTransformResponseObjectLatency(ctx context.Context, transform func())"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func UserFrom(ctx context.Context) (user.Info, bool)"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func WithAuditID(parent context.Context, auditID types.UID) context.Context"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,func WithLatencyTrackers(parent context.Context) context.Context
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func WithLatencyTrackersAndCustomClock(parent context.Context, c clock.Clock) context.Context"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func WithNamespace(parent context.Context, namespace string) context.Context"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func WithReceivedTimestamp(parent context.Context, receivedTimestamp time.Time) context.Context"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func WithRequestInfo(parent context.Context, info *RequestInfo) context.Context"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func WithUser(parent context.Context, user user.Info) context.Context"
+request (k8s.io/apiserver/pkg/endpoints/request),/k8s.io/apiserver/pkg/endpoints/request,"func WithValue(parent context.Context, key interface{}, val interface{}) context.Context"
+handlers (github.com/gorilla/handlers),/github.com/gorilla/handlers,func CORS(opts ...CORSOption) func(http.Handler) http.Handler
+handlers (github.com/gorilla/handlers),/github.com/gorilla/handlers,"func CanonicalHost(domain string, code int) func(h http.Handler) http.Handler"
+handlers (github.com/gorilla/handlers),/github.com/gorilla/handlers,"func CombinedLoggingHandler(out io.Writer, h http.Handler) http.Handler"
+handlers (github.com/gorilla/handlers),/github.com/gorilla/handlers,func CompressHandler(h http.Handler) http.Handler
+handlers (github.com/gorilla/handlers),/github.com/gorilla/handlers,"func CompressHandlerLevel(h http.Handler, level int) http.Handler"
+handlers (github.com/gorilla/handlers),/github.com/gorilla/handlers,"func ContentTypeHandler(h http.Handler, contentTypes ...string) http.Handler"
+handlers (github.com/gorilla/handlers),/github.com/gorilla/handlers,"func CustomLoggingHandler(out io.Writer, h http.Handler, f LogFormatter) http.Handler"
+handlers (github.com/gorilla/handlers),/github.com/gorilla/handlers,func HTTPMethodOverrideHandler(h http.Handler) http.Handler
+handlers (github.com/gorilla/handlers),/github.com/gorilla/handlers,"func LoggingHandler(out io.Writer, h http.Handler) http.Handler"
+handlers (github.com/gorilla/handlers),/github.com/gorilla/handlers,func ProxyHeaders(h http.Handler) http.Handler
+handlers (github.com/gorilla/handlers),/github.com/gorilla/handlers,func RecoveryHandler(opts ...RecoveryOption) func(h http.Handler) http.Handler
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,func Background() context.Context
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,"func GetRequest(ctx context.Context) (*http.Request, error)"
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,func GetRequestID(ctx context.Context) string
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,"func GetResponseWriter(ctx context.Context) (http.ResponseWriter, error)"
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,"func GetStringValue(ctx context.Context, key interface{}) (value string)"
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,func GetVersion(ctx context.Context) string
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,func RemoteAddr(r *http.Request) string
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,func RemoteIP(r *http.Request) string
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,"func Since(ctx context.Context, key interface{}) time.Duration"
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,"func WithLogger(ctx context.Context, logger Logger) context.Context"
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,"func WithRequest(ctx context.Context, r *http.Request) context.Context"
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,"func WithResponseWriter(ctx context.Context, w http.ResponseWriter) (context.Context, http.ResponseWriter)"
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,"func WithTrace(ctx context.Context) (context.Context, func(format string, a ...interface{}))"
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,"func WithValues(ctx context.Context, m map[string]interface{}) context.Context"
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,"func WithVars(ctx context.Context, r *http.Request) context.Context"
+context (github.com/docker/distribution/context),/github.com/docker/distribution/context,"func WithVersion(ctx context.Context, version string) context.Context"
+promhttp (github.com/prometheus/client_golang/prometheus/promhttp),/github.com/prometheus/client_golang/prometheus/promhttp,func Handler() http.Handler
+promhttp (github.com/prometheus/client_golang/prometheus/promhttp),/github.com/prometheus/client_golang/prometheus/promhttp,"func HandlerFor(reg prometheus.Gatherer, opts HandlerOpts) http.Handler"
+promhttp (github.com/prometheus/client_golang/prometheus/promhttp),/github.com/prometheus/client_golang/prometheus/promhttp,"func HandlerForTransactional(reg prometheus.TransactionalGatherer, opts HandlerOpts) http.Handler"
+promhttp (github.com/prometheus/client_golang/prometheus/promhttp),/github.com/prometheus/client_golang/prometheus/promhttp,"func InstrumentHandlerCounter(counter *prometheus.CounterVec, next http.Handler, opts ...Option) http.HandlerFunc"
+promhttp (github.com/prometheus/client_golang/prometheus/promhttp),/github.com/prometheus/client_golang/prometheus/promhttp,"func InstrumentHandlerDuration(obs prometheus.ObserverVec, next http.Handler, opts ...Option) http.HandlerFunc"
+promhttp (github.com/prometheus/client_golang/prometheus/promhttp),/github.com/prometheus/client_golang/prometheus/promhttp,"func InstrumentHandlerInFlight(g prometheus.Gauge, next http.Handler) http.Handler"
+promhttp (github.com/prometheus/client_golang/prometheus/promhttp),/github.com/prometheus/client_golang/prometheus/promhttp,"func InstrumentHandlerRequestSize(obs prometheus.ObserverVec, next http.Handler, opts ...Option) http.HandlerFunc"
+promhttp (github.com/prometheus/client_golang/prometheus/promhttp),/github.com/prometheus/client_golang/prometheus/promhttp,"func InstrumentHandlerResponseSize(obs prometheus.ObserverVec, next http.Handler, opts ...Option) http.Handler"
+promhttp (github.com/prometheus/client_golang/prometheus/promhttp),/github.com/prometheus/client_golang/prometheus/promhttp,"func InstrumentHandlerTimeToWriteHeader(obs prometheus.ObserverVec, next http.Handler, opts ...Option) http.HandlerFunc"
+promhttp (github.com/prometheus/client_golang/prometheus/promhttp),/github.com/prometheus/client_golang/prometheus/promhttp,"func InstrumentMetricHandler(reg prometheus.Registerer, handler http.Handler) http.Handler"
+http (github.com/go-kit/kit/transport/http),/github.com/go-kit/kit/transport/http,"func DefaultErrorEncoder(_ context.Context, err error, w http.ResponseWriter)"
+http (github.com/go-kit/kit/transport/http),/github.com/go-kit/kit/transport/http,"func EncodeJSONRequest(c context.Context, r *http.Request, request interface{}) error"
+http (github.com/go-kit/kit/transport/http),/github.com/go-kit/kit/transport/http,"func EncodeJSONResponse(_ context.Context, w http.ResponseWriter, response interface{}) error"
+http (github.com/go-kit/kit/transport/http),/github.com/go-kit/kit/transport/http,"func EncodeXMLRequest(c context.Context, r *http.Request, request interface{}) error"
+http (github.com/go-kit/kit/transport/http),/github.com/go-kit/kit/transport/http,"func NopRequestDecoder(ctx context.Context, r *http.Request) (interface{}, error)"
+http (github.com/go-kit/kit/transport/http),/github.com/go-kit/kit/transport/http,"func PopulateRequestContext(ctx context.Context, r *http.Request) context.Context"
+httprouter (github.com/julienschmidt/httprouter),/github.com/julienschmidt/httprouter,func CleanPath(p string) string
+oauth2 (golang.org/x/oauth2),/golang.org/x/oauth2,"func NewClient(ctx context.Context, src TokenSource) *http.Client"
+oauth2 (golang.org/x/oauth2),/golang.org/x/oauth2,func RegisterBrokenAuthHeaderProvider(tokenURL string)
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func AddCloseResponseBodyMiddleware(stack *middleware.Stack) error
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func AddComputeContentLengthMiddleware(stack *middleware.Stack) error
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func AddContentChecksumMiddleware(stack *middleware.Stack) error
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func AddErrorCloseResponseBodyMiddleware(stack *middleware.Stack) error
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,"func AddHeaderValue(header string, value string) func(stack *middleware.Stack) error"
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func AddNoPayloadDefaultContentTypeRemover(stack *middleware.Stack) (err error)
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,"func AddRequireMinimumProtocol(stack *middleware.Stack, major, minor int) error"
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,"func DisableEndpointHostPrefix(ctx context.Context, value bool) context.Context"
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func GetHostnameImmutable(ctx context.Context) (v bool)
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func GetIsContentTypeDefaultValue(ctx context.Context) bool
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func IsEndpointHostPrefixDisabled(ctx context.Context) (v bool)
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,"func JoinPath(a, b string) string"
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,"func JoinRawQuery(a, b string) string"
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func NewStackRequest() interface{}
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,"func ParseTime(text string) (t time.Time, err error)"
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func RemoveNoPayloadDefaultContentTypeRemover(stack *middleware.Stack) (err error)
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func RequestCloner(v interface{}) interface{}
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,"func SetHeaderValue(header string, value string) func(stack *middleware.Stack) error"
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,"func SetHostnameImmutable(ctx context.Context, value bool) context.Context"
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,"func SetIsContentTypeDefaultValue(ctx context.Context, isDefault bool) context.Context"
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,"func SplitHTTPDateTimestampHeaderListValues(vs []string) ([]string, error)"
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,"func SplitHeaderListValues(vs []string) ([]string, error)"
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func ValidHostLabel(label string) bool
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func ValidPortNumber(port string) bool
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func ValidateContentLengthHeader(stack *middleware.Stack) error
+http (github.com/aws/smithy-go/transport/http),/github.com/aws/smithy-go/transport/http,func ValidateEndpointHost(host string) error
+chi (github.com/go-chi/chi/v5),/github.com/go-chi/chi/v5,func RegisterMethod(method string)
+chi (github.com/go-chi/chi/v5),/github.com/go-chi/chi/v5,"func URLParam(r *http.Request, key string) string"
+chi (github.com/go-chi/chi/v5),/github.com/go-chi/chi/v5,"func URLParamFromCtx(ctx context.Context, key string) string"
+chi (github.com/go-chi/chi/v5),/github.com/go-chi/chi/v5,"func Walk(r Routes, walkFn WalkFunc) error"
+auth (github.com/abbot/go-http-auth),/github.com/abbot/go-http-auth,func DigestAuthParams(authorization string) map[string]string
+auth (github.com/abbot/go-http-auth),/github.com/abbot/go-http-auth,func H(data string) string
+auth (github.com/abbot/go-http-auth),/github.com/abbot/go-http-auth,"func JustCheck(auth AuthenticatorInterface, wrapped http.HandlerFunc) http.HandlerFunc"
+auth (github.com/abbot/go-http-auth),/github.com/abbot/go-http-auth,"func MD5Crypt(password, salt, magic []byte) []byte"
+auth (github.com/abbot/go-http-auth),/github.com/abbot/go-http-auth,func ParseList(value string) []string
+auth (github.com/abbot/go-http-auth),/github.com/abbot/go-http-auth,func ParsePairs(value string) map[string]string
+auth (github.com/abbot/go-http-auth),/github.com/abbot/go-http-auth,func RandomKey() string
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func AsStringSlice(s interface{}) ([]string, error)"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,func ChangeToGet(req *http.Request) *http.Request
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func CopyAndDecode(encodedAs EncodedAs, r io.Reader, v interface{}) (bytes.Buffer, error)"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func DelayForBackoff(backoff time.Duration, attempt int, cancel <-chan struct{}) bool"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func DelayForBackoffWithCap(backoff, cap time.Duration, attempt int, cancel <-chan struct{}) bool"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func DelayWithRetryAfter(resp *http.Response, cancel <-chan struct{}) bool"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,func DrainResponseBody(resp *http.Response) error
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func Encode(location string, v interface{}, sep ...string) string"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func ExtractHeader(header string, resp *http.Response) []string"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func ExtractHeaderValue(header string, resp *http.Response) string"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,func GetLocation(resp *http.Response) string
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func GetRetryAfter(resp *http.Response, defaultDelay time.Duration) time.Duration"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,func IsTemporaryNetworkError(err error) bool
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,func IsTokenRefreshError(err error) bool
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,func MapToValues(m map[string]interface{}) url.Values
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func NewPollingRequest(resp *http.Response, cancel <-chan struct{}) (*http.Request, error)"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func NewPollingRequestWithContext(ctx context.Context, resp *http.Response) (*http.Request, error)"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func Prepare(r *http.Request, decorators ...PrepareDecorator) (*http.Request, error)"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func Respond(r *http.Response, decorators ...RespondDecorator) error"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func ResponseHasStatusCode(resp *http.Response, codes ...int) bool"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func Send(r *http.Request, decorators ...SendDecorator) (*http.Response, error)"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func SendWithSender(s Sender, r *http.Request, decorators ...SendDecorator) (*http.Response, error)"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func String(v interface{}, sep ...string) string"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func TeeReadCloser(rc io.ReadCloser, w io.Writer) io.ReadCloser"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,func UserAgent() string
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,func Version() string
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func WithPrepareDecorators(ctx context.Context, prepareDecorator []PrepareDecorator) context.Context"
+autorest (github.com/Azure/go-autorest/autorest),/github.com/Azure/go-autorest/autorest,"func WithSendDecorators(ctx context.Context, sendDecorator []SendDecorator) context.Context"
+resty (github.com/go-resty/resty/v2),/github.com/go-resty/resty/v2,"func Backoff(operation func() (*Response, error), options ...Option) error"
+resty (github.com/go-resty/resty/v2),/github.com/go-resty/resty/v2,func DetectContentType(body interface{}) string
+resty (github.com/go-resty/resty/v2),/github.com/go-resty/resty/v2,func IsJSONType(ct string) bool
+resty (github.com/go-resty/resty/v2),/github.com/go-resty/resty/v2,func IsStringEmpty(str string) bool
+resty (github.com/go-resty/resty/v2),/github.com/go-resty/resty/v2,func IsXMLType(ct string) bool
+resty (github.com/go-resty/resty/v2),/github.com/go-resty/resty/v2,"func Unmarshalc(c *Client, ct string, b []byte, d interface{}) (err error)"
+gin (github.com/gin-gonic/gin),/github.com/gin-gonic/gin,"func CreateTestContext(w http.ResponseWriter) (c *Context, r *Engine)"
+gin (github.com/gin-gonic/gin),/github.com/gin-gonic/gin,"func Dir(root string, listDirectory bool) http.FileSystem"
+gin (github.com/gin-gonic/gin),/github.com/gin-gonic/gin,func DisableBindValidation()
+gin (github.com/gin-gonic/gin),/github.com/gin-gonic/gin,func DisableConsoleColor()
+gin (github.com/gin-gonic/gin),/github.com/gin-gonic/gin,func EnableJsonDecoderDisallowUnknownFields()
+gin (github.com/gin-gonic/gin),/github.com/gin-gonic/gin,func EnableJsonDecoderUseNumber()
+gin (github.com/gin-gonic/gin),/github.com/gin-gonic/gin,func ForceConsoleColor()
+gin (github.com/gin-gonic/gin),/github.com/gin-gonic/gin,func IsDebugging() bool
+gin (github.com/gin-gonic/gin),/github.com/gin-gonic/gin,func Mode() string
+gin (github.com/gin-gonic/gin),/github.com/gin-gonic/gin,func SetMode(value string)
+fiber (github.com/gofiber/fiber/v2),/github.com/gofiber/fiber/v2,func GetTrimmedParam(param string) string
+fiber (github.com/gofiber/fiber/v2),/github.com/gofiber/fiber/v2,func IsChild() bool
+fiber (github.com/gofiber/fiber/v2),/github.com/gofiber/fiber/v2,func ReleaseAgent(a *Agent)
+fiber (github.com/gofiber/fiber/v2),/github.com/gofiber/fiber/v2,func ReleaseArgs(a *Args)
+fiber (github.com/gofiber/fiber/v2),/github.com/gofiber/fiber/v2,func ReleaseClient(c *Client)
+fiber (github.com/gofiber/fiber/v2),/github.com/gofiber/fiber/v2,func ReleaseFormFile(ff *FormFile)
+fiber (github.com/gofiber/fiber/v2),/github.com/gofiber/fiber/v2,func ReleaseResponse(resp *Response)
+fiber (github.com/gofiber/fiber/v2),/github.com/gofiber/fiber/v2,func RemoveEscapeChar(word string) string
+fiber (github.com/gofiber/fiber/v2),/github.com/gofiber/fiber/v2,func SetParserDecoder(parserConfig ParserConfig)
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,func AcquireTimer(timeout time.Duration) *time.Timer
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendBrotliBytes(dst, src []byte) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendBrotliBytesLevel(dst, src []byte, level int) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendDeflateBytes(dst, src []byte) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendDeflateBytesLevel(dst, src []byte, level int) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendGunzipBytes(dst, src []byte) ([]byte, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendGzipBytes(dst, src []byte) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendGzipBytesLevel(dst, src []byte, level int) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendHTMLEscape(dst []byte, s string) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendHTMLEscapeBytes(dst, s []byte) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendHTTPDate(dst []byte, date time.Time) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendIPv4(dst []byte, ip net.IP) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendInflateBytes(dst, src []byte) ([]byte, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendNormalizedHeaderKey(dst []byte, key string) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendNormalizedHeaderKeyBytes(dst, key []byte) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendQuotedArg(dst, src []byte) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendUint(dst []byte, n int) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendUnbrotliBytes(dst, src []byte) ([]byte, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func AppendUnquotedArg(dst, src []byte) []byte"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,func CoarseTimeNow() time.Time
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func Dial(addr string) (net.Conn, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func DialDualStack(addr string) (net.Conn, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func DialDualStackTimeout(addr string, timeout time.Duration) (net.Conn, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func DialTimeout(addr string, timeout time.Duration) (net.Conn, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func Do(req *Request, resp *Response) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func DoDeadline(req *Request, resp *Response, deadline time.Time) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func DoRedirects(req *Request, resp *Response, maxRedirectsCount int) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func DoTimeout(req *Request, resp *Response, timeout time.Duration) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func FileLastModified(path string) (time.Time, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func GenerateTestCertificate(host string) ([]byte, []byte, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func Get(dst []byte, url string) (statusCode int, body []byte, err error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func GetDeadline(dst []byte, url string, deadline time.Time) (statusCode int, body []byte, err error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func GetTimeout(dst []byte, url string, timeout time.Duration) (statusCode int, body []byte, err error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ListenAndServe(addr string, handler RequestHandler) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ListenAndServeTLS(addr, certFile, keyFile string, handler RequestHandler) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ListenAndServeTLSEmbed(addr string, certData, keyData []byte, handler RequestHandler) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ListenAndServeUNIX(addr string, mode os.FileMode, handler RequestHandler) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,func NewStreamReader(sw StreamWriter) io.ReadCloser
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ParseByteRange(byteRange []byte, contentLength int) (startPos, endPos int, err error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ParseHTTPDate(date []byte) (time.Time, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ParseIPv4(dst net.IP, ipStr []byte) (net.IP, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ParseUfloat(buf []byte) (float64, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ParseUint(buf []byte) (int, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func Post(dst []byte, url string, postArgs *Args) (statusCode int, body []byte, err error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,func ReleaseArgs(a *Args)
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,func ReleaseCookie(c *Cookie)
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,func ReleaseRequest(req *Request)
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,func ReleaseResponse(resp *Response)
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,func ReleaseTimer(t *time.Timer)
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,func ReleaseURI(u *URI)
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func SaveMultipartFile(fh *multipart.FileHeader, path string) (err error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func Serve(ln net.Listener, handler RequestHandler) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ServeConn(c net.Conn, handler RequestHandler) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ServeFile(ctx *RequestCtx, path string)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ServeFileBytes(ctx *RequestCtx, path []byte)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ServeFileBytesUncompressed(ctx *RequestCtx, path []byte)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ServeFileUncompressed(ctx *RequestCtx, path string)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ServeTLS(ln net.Listener, certFile, keyFile string, handler RequestHandler) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func ServeTLSEmbed(ln net.Listener, certData, keyData []byte, handler RequestHandler) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func SetBodySizePoolLimit(reqBodyLimit, respBodyLimit int)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,func StatusCodeIsRedirect(statusCode int) bool
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,func StatusMessage(statusCode int) string
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func WriteBrotli(w io.Writer, p []byte) (int, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func WriteBrotliLevel(w io.Writer, p []byte, level int) (int, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func WriteDeflate(w io.Writer, p []byte) (int, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func WriteDeflateLevel(w io.Writer, p []byte, level int) (int, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func WriteGunzip(w io.Writer, p []byte) (int, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func WriteGzip(w io.Writer, p []byte) (int, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func WriteGzipLevel(w io.Writer, p []byte, level int) (int, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func WriteInflate(w io.Writer, p []byte) (int, error)"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func WriteMultipartForm(w io.Writer, f *multipart.Form, boundary string) error"
+fasthttp (github.com/valyala/fasthttp),/github.com/valyala/fasthttp,"func WriteUnbrotli(w io.Writer, p []byte) (int, error)"

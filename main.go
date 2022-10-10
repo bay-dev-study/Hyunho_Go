@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Hyunho_Go/packageScrapper"
+	"Hyunho_Go/scrapper"
 	"Hyunho_Go/utils"
 	"fmt"
 )
@@ -20,6 +20,18 @@ func main() {
 	pageURL := fmt.Sprintf("%s/search?q=%s", mainURL, searchWord)
 	fmt.Println(pageURL)
 
-	packageDataSlice := packageScrapper.GetPackageData(pageURL)
-	packageScrapper.SavePackageData(packageDataSlice, "result.csv")
+	returnPackageMainInfoChannel := make(chan []scrapper.PackageMainInfo)
+	go scrapper.GetPackageMainInfo(pageURL, returnPackageMainInfoChannel)
+	packageMainInfoSlice := <-returnPackageMainInfoChannel
+	scrapper.SavePackageMainInfo(packageMainInfoSlice, "mainInfo.csv")
+
+	returnPackageFuncInfoChannel := make(chan scrapper.PackageFuncInfo)
+	for _, packageMainInfo := range packageMainInfoSlice {
+		go scrapper.GetPackageFuncInfo(mainURL+packageMainInfo.Url(), packageMainInfo, returnPackageFuncInfoChannel) // packageMainInfo를 pointer로 넘겨주면 왜 안 되는것일까?
+	}
+	var packageFuncInfoSlice []scrapper.PackageFuncInfo
+	for range packageMainInfoSlice {
+		packageFuncInfoSlice = append(packageFuncInfoSlice, <-returnPackageFuncInfoChannel)
+	}
+	scrapper.SavePackageFuncInfo(packageFuncInfoSlice, "funcInfo.csv")
 }

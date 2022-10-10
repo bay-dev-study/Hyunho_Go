@@ -1,4 +1,4 @@
-package packageScrapper
+package scrapper
 
 import (
 	"strconv"
@@ -21,7 +21,7 @@ func ParsePackageTitle(section *goquery.Selection) (string, bool) {
 }
 
 func ParsePackageLink(section *goquery.Selection) (string, bool) {
-	link, exists := section.Find("A").Attr("href")
+	link, exists := section.Find("A").First().Attr("href")
 	return link, exists
 }
 
@@ -46,4 +46,10 @@ func ParseDiscription(section *goquery.Selection) (string, bool) {
 	discription := section.Find("p.SearchSnippet-synopsis").Text()
 	discription = strings.TrimSpace(discription)
 	return discription, (len(discription) > 0)
+}
+
+func ParseFuncInfo(section *goquery.Selection) (string, bool) {
+	funcInfo := section.Find("div.Documentation-declaration").Text()
+	funcInfo = strings.TrimSpace(funcInfo)
+	return funcInfo, (len(funcInfo) > 0)
 }
