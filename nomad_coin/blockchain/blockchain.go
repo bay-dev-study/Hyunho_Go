@@ -3,72 +3,69 @@ package blockchain
 import (
 	"errors"
 	"fmt"
+	"sync"
 )
 
-type Block struct {
+type block struct {
 	data     []byte
 	hash     [32]byte
 	prevHash [32]byte
 }
 
-type BlockChain struct {
-	blocks []Block
+type blockchain struct {
+	blocks []block
 }
 
 var ErrEmptyBlock = errors.New("empty block error")
 
-func (blockchain *BlockChain) getBlockLength() int {
-	return len(blockchain.blocks)
-}
+var blockchainSingletonInstance *blockchain
+var once sync.Once
 
-func (blockchain *BlockChain) getLastBlock() (*Block, error) {
-	chainLength := blockchain.getBlockLength()
-	if chainLength > 0 {
-		return &blockchain.blocks[chainLength-1], nil
+func GetBlockChain() *blockchain {
+	if blockchainSingletonInstance == nil {
+		once.Do(func() {
+			genesisBlockData := []byte("GenesisBlock")
+			genesisBlock := block{genesisBlockData, Hashing(genesisBlockData), [32]byte{}}
+			blockchainSingletonInstance = &blockchain{blocks: []block{genesisBlock}}
+		})
 	}
-	return nil, ErrEmptyBlock
+	return blockchainSingletonInstance
 }
 
-func (blockchain *BlockChain) addBlock(data []byte) {
-	lastBlock, err := blockchain.getLastBlock()
-	var newBlock Block
-	if err != nil {
-		newBlock = Block{
-			data:     data,
-			hash:     Hashing(data),
-			prevHash: [32]byte{},
-		}
-	} else {
-		newBlock = Block{
-			data:     data,
-			hash:     Hashing(append(data, lastBlock.prevHash[:]...)),
-			prevHash: lastBlock.hash,
-		}
+func (b *blockchain) getBlockLength() int {
+	return len(b.blocks)
+}
+
+func (b *blockchain) getLastBlock() *block {
+	chainLength := b.getBlockLength()
+	return &b.blocks[chainLength-1]
+}
+
+func (b *blockchain) AddBlock(data []byte) {
+	lastBlock := b.getLastBlock()
+	newBlock := block{
+		data:     data,
+		hash:     Hashing(append(data, lastBlock.prevHash[:]...)),
+		prevHash: lastBlock.hash,
 	}
-	blockchain.blocks = append(blockchain.blocks, newBlock)
+	b.blocks = append(b.blocks, newBlock)
 }
 
-func (blockchain *BlockChain) AddBlockStrData(data string) {
-	blockchain.addBlock([]byte(data))
+func (b *blockchain) AddBlockStrData(data string) {
+	b.AddBlock([]byte(data))
 }
 
-func (blockchain *BlockChain) PrintBlocks() {
-	blockLength := blockchain.getBlockLength()
+func (b *blockchain) PrintBlocks() {
+	blockLength := b.getBlockLength()
 	if blockLength == 0 {
 		fmt.Println("empty blocks")
 		return
 	}
-	for idx, block := range blockchain.blocks {
-		fmt.Printf("[%d Block]\n", idx)
-		fmt.Printf("--------------------\n")
+	for idx, block := range b.blocks {
+		fmt.Printf("[%d Block]\n", idx+1)
 		fmt.Printf("Data: %s\n", block.data)
 		fmt.Printf("Hash: %x\n", block.hash)
 		fmt.Printf("PrevHash: %x\n", block.prevHash)
+		fmt.Printf("--------------------\n")
 	}
 }
-
-// chain := BlockChain{}
-// chain.addBlock("Genesis Block")
-// chain.addBlock("Second Block")
-// chain.addBlock("Third Block")
-// chain.listBlocks()
