@@ -1,11 +1,9 @@
 package main
 
-import (
-	"nomad_coin/explorer"
-	"nomad_coin/rest"
-)
+import "nomad_coin/cli"
 
 func main() {
-	go explorer.Start(8080)
-	rest.Start(4000)
+	cli.Start()
+	// go explorer.Start(8080)
+	// rest.Start(4000)
 }
