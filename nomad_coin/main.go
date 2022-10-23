@@ -1,7 +1,11 @@
 package main
 
-import "nomad_coin/explorer"
+import (
+	"nomad_coin/explorer"
+	"nomad_coin/rest"
+)
 
 func main() {
-	explorer.Start()
+	go explorer.Start(8080)
+	rest.Start(4000)
 }
