@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"nomad_coin/blockchain"
 	"nomad_coin/utils"
-	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -41,17 +40,13 @@ func getDocument() []*documentData {
 	documentDataAll = append(documentDataAll, &documentData{"/", "GET", "API Document", ""})
 	documentDataAll = append(documentDataAll, &documentData{"/blocks", "GET", "Get All Blocks Info", ""})
 	documentDataAll = append(documentDataAll, &documentData{"/blocks", "POST", "Add A Block", "{data: data_to_add_in_block}"})
-	documentDataAll = append(documentDataAll, &documentData{"/blocks/{height}", "GET", "See A Block", ""})
+	documentDataAll = append(documentDataAll, &documentData{"/blocks/{hash}", "GET", "See A Block", ""})
 	return documentDataAll
 }
 
 func getAllBlocks() []*blockchain.Block {
 	return blockchain.GetBlockchain().AllBlocks()
 }
-
-// func getSingleBlock() {
-
-// }
 
 func handleRoot(rw http.ResponseWriter, r *http.Request) {
 	document := getDocument()
@@ -70,22 +65,21 @@ func handleBlocks(rw http.ResponseWriter, r *http.Request) {
 		var blockDataToAdd blockPayload
 		rw.Header().Add("content-type", "application/json")
 		utils.ErrHandler(json.NewDecoder(r.Body).Decode(&blockDataToAdd))
-		blockchain.GetBlockchain().AddBlock(blockDataToAdd.Data)
+		blockchain.GetBlockchain().CreateBlockAndSave(blockDataToAdd.Data)
 		rw.WriteHeader(http.StatusCreated)
 	}
 }
 
 func blocks(rw http.ResponseWriter, r *http.Request) {
-	blockHeightInRawUrl := mux.Vars(r)
-	blockHeight, err := strconv.Atoi(blockHeightInRawUrl["height"])
-	utils.ErrHandler(err)
+	blockHashInRawUrl := mux.Vars(r)
+	blockHash := blockHashInRawUrl["hash"]
 
-	blockInHeight, err := blockchain.GetBlockByHeight(blockHeight)
+	blockDataMatchesHash, err := blockchain.GetBlockByHash(blockHash)
 	if err != nil {
 		errorMessage := errorMessage{"block not found"}
 		json.NewEncoder(rw).Encode(&errorMessage)
 	} else {
-		json.NewEncoder(rw).Encode(&blockInHeight)
+		json.NewEncoder(rw).Encode(&blockDataMatchesHash)
 	}
 }
 
@@ -93,7 +87,7 @@ func Start(port int) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", handleRoot).Methods("GET")
 	router.HandleFunc("/blocks", handleBlocks).Methods("GET", "POST")
-	router.HandleFunc("/blocks/{height:[0-9]+}", blocks).Methods("GET")
+	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", blocks).Methods("GET")
 
 	portInString := fmt.Sprintf(":%d", port)
 	rootUrlWithPort = fmt.Sprintf("http://localhost%s", portInString)

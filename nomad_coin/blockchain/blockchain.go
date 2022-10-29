@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"nomad_coin/database"
+	"nomad_coin/utils"
 	"sync"
 )
 
@@ -15,55 +17,111 @@ type Block struct {
 }
 
 type blockchain struct {
-	blocks []*Block
+	LastHash string
+	Height   int
 }
+
+var ErrNotFound = errors.New("block not found")
+
+var db *database.Database
 
 var b *blockchain
 
-var once sync.Once
+var onceForBlockchain sync.Once
+var onceForDatabase sync.Once
 
-var BlockNotFoundErr error = errors.New("block not found err")
+const DATABASE_FILE_NAME = "blockchain.boltdb"
+const BLOCKCHAIN_INFO_BUCKET_NAME = "blockchain"
+const BLOCKCHAIN_INFO_KEY_NAME = "checkpoint"
 
-func (b *Block) calculateHash() {
-	hash := sha256.Sum256([]byte(b.Data + b.PrevHash))
-	b.Hash = fmt.Sprintf("%x", hash)
-}
+const BLOCK_DATA_BUCKET_NAME = "blockdata"
 
-func getLastHash() string {
-	totalBlocks := len(GetBlockchain().blocks)
-	if totalBlocks == 0 {
-		return ""
+func GetBlockchainDB() *database.Database {
+	if db == nil {
+		onceForDatabase.Do(func() {
+			db = &database.Database{}
+			utils.ErrHandler(db.OpenDB(DATABASE_FILE_NAME))
+			utils.ErrHandler(db.CreateBucketWithStringName(BLOCKCHAIN_INFO_BUCKET_NAME))
+			utils.ErrHandler(db.CreateBucketWithStringName(BLOCK_DATA_BUCKET_NAME))
+		})
 	}
-	return GetBlockchain().blocks[totalBlocks-1].Hash
+	return db
 }
 
-func createBlock(data string) *Block {
-	newBlock := Block{data, "", getLastHash(), len(GetBlockchain().blocks) + 1}
+func (block *Block) calculateHash() {
+	hash := sha256.Sum256([]byte(block.Data + block.PrevHash))
+	block.Hash = fmt.Sprintf("%x", hash)
+}
+func updateBlockchain(newBlock *Block) {
+	b.Height = newBlock.Height
+	b.LastHash = newBlock.Hash
+	byteBlockchainDataToSave, err := utils.ObjectToBytes(b)
+	utils.ErrHandler(err)
+	utils.ErrHandler(GetBlockchainDB().WriteByteDataToBucket(BLOCKCHAIN_INFO_BUCKET_NAME, BLOCKCHAIN_INFO_KEY_NAME, byteBlockchainDataToSave))
+}
+func saveNewBlock(newBlock *Block) {
+	byteBlockDataToSave, err := utils.ObjectToBytes(&newBlock)
+	utils.ErrHandler(err)
+	utils.ErrHandler(GetBlockchainDB().WriteByteDataToBucket(BLOCK_DATA_BUCKET_NAME, newBlock.Hash, byteBlockDataToSave))
+}
+func (b *blockchain) CreateBlockAndSave(data string) {
+	newBlock := Block{data, "", b.LastHash, b.Height + 1}
 	newBlock.calculateHash()
-	return &newBlock
+
+	updateBlockchain(&newBlock)
+	saveNewBlock(&newBlock)
 }
 
-func (b *blockchain) AddBlock(data string) {
-	b.blocks = append(b.blocks, createBlock(data))
-}
-
-func GetBlockByHeight(height int) (*Block, error) {
-
-	if height >= len(GetBlockchain().blocks) || height <= 0 {
-		return nil, BlockNotFoundErr
+func GetBlockByHash(hash string) (*Block, error) {
+	data, err := GetBlockchainDB().ReadByteDataFromBucket(BLOCK_DATA_BUCKET_NAME, hash)
+	utils.ErrHandler(err)
+	if data == nil {
+		return nil, ErrNotFound
 	}
-	return GetBlockchain().blocks[height-1], nil
+	block := Block{}
+	utils.ErrHandler(utils.ObjectFromBytes(&block, data))
+	return &block, nil
 }
+
+func (b *blockchain) LoadBlockchain() {
+	data, err := GetBlockchainDB().ReadByteDataFromBucket(BLOCKCHAIN_INFO_BUCKET_NAME, BLOCKCHAIN_INFO_KEY_NAME)
+	utils.ErrHandler(err)
+	if data != nil {
+		utils.ErrHandler(utils.ObjectFromBytes(b, data))
+	}
+}
+
 func GetBlockchain() *blockchain {
 	if b == nil {
-		once.Do(func() {
-			b = &blockchain{}
-			b.AddBlock("Genesis")
+		onceForBlockchain.Do(func() {
+
+			b = &blockchain{"", 0}
+			b.LoadBlockchain()
+
+			if b.Height == 0 {
+				b.CreateBlockAndSave("Genesis")
+			}
 		})
 	}
 	return b
 }
 
 func (b *blockchain) AllBlocks() []*Block {
-	return b.blocks
+	allBlocks := []*Block{}
+	lastHash := b.LastHash
+	for {
+		if lastHash == "" {
+			break
+		}
+		block, err := GetBlockByHash(lastHash)
+		utils.ErrHandler(err)
+		allBlocks = append(allBlocks, block)
+		lastHash = block.PrevHash
+	}
+
+	for i, j := 0, len(allBlocks)-1; i < j; i, j = i+1, j-1 {
+		allBlocks[i], allBlocks[j] = allBlocks[j], allBlocks[i]
+	}
+
+	return allBlocks
 }

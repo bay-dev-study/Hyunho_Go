@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"log"
 	"nomad_coin/explorer"
 	"nomad_coin/rest"
@@ -12,16 +13,17 @@ import (
 var port int
 
 var launchCmd = &cobra.Command{
-	Use:   "launch",
+	Use:   "launch <explorer/rest>",
 	Short: "An application to simulate blockchain",
 	Long: `
 	This command can launch rest server or blockchain explorer
 	Usage: launch <explorer/rest> --port=<port number>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
+		if len(args) < 2 {
 			log.Fatal("Server to launch is not specified")
 		}
-		explorerOrRest := args[0]
+		explorerOrRest := args[1]
+		fmt.Println(explorerOrRest)
 		switch strings.ToLower(explorerOrRest) {
 		case "explorer":
 			explorer.Start(port)

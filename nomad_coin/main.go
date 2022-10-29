@@ -1,9 +1,11 @@
 package main
 
-import "nomad_coin/cli"
+import (
+	"nomad_coin/cli"
+	"nomad_coin/database"
+)
 
 func main() {
+	defer database.CloseAllOpenedDB()
 	cli.Start()
-	// go explorer.Start(8080)
-	// rest.Start(4000)
 }
