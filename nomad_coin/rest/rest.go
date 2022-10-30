@@ -38,6 +38,7 @@ type errorMessage struct {
 func getDocument() []*documentData {
 	documentDataAll := make([]*documentData, 0)
 	documentDataAll = append(documentDataAll, &documentData{"/", "GET", "API Document", ""})
+	documentDataAll = append(documentDataAll, &documentData{"/status", "GET", "Get Blockchain Status", ""})
 	documentDataAll = append(documentDataAll, &documentData{"/blocks", "GET", "Get All Blocks Info", ""})
 	documentDataAll = append(documentDataAll, &documentData{"/blocks", "POST", "Add A Block", "{data: data_to_add_in_block}"})
 	documentDataAll = append(documentDataAll, &documentData{"/blocks/{hash}", "GET", "See A Block", ""})
@@ -52,6 +53,12 @@ func handleRoot(rw http.ResponseWriter, r *http.Request) {
 	document := getDocument()
 	rw.Header().Add("content-type", "application/json")
 	utils.ErrHandler(json.NewEncoder(rw).Encode(&document))
+}
+
+func handleStatus(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Add("content-type", "application/json")
+	jsonEncoder := json.NewEncoder(rw)
+	jsonEncoder.Encode(blockchain.GetBlockchain())
 }
 
 func handleBlocks(rw http.ResponseWriter, r *http.Request) {
@@ -86,6 +93,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 func Start(port int) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", handleRoot).Methods("GET")
+	router.HandleFunc("/status", handleStatus).Methods("GET")
 	router.HandleFunc("/blocks", handleBlocks).Methods("GET", "POST")
 	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", blocks).Methods("GET")
 

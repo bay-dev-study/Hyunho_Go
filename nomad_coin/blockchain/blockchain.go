@@ -1,24 +1,27 @@
 package blockchain
 
 import (
-	"crypto/sha256"
 	"errors"
-	"fmt"
 	"nomad_coin/database"
 	"nomad_coin/utils"
 	"sync"
+	"time"
 )
 
 type Block struct {
-	Data     string `json:"data"`
-	Hash     string `json:"hash"`
-	PrevHash string `json:"prevHash,omitempty"`
-	Height   int    `json:"height"`
+	Data       string `json:"data"`
+	Hash       string `json:"hash"`
+	PrevHash   string `json:"prevHash,omitempty"`
+	Height     int    `json:"height"`
+	Difficulty int    `json:"difficulty"`
+	Timestamp  int    `json:"timestamp"`
+	Nonce      int    `json:"nonce"`
 }
 
 type blockchain struct {
-	LastHash string
-	Height   int
+	LastHash   string
+	Height     int
+	Difficulty int
 }
 
 var ErrNotFound = errors.New("block not found")
@@ -33,7 +36,6 @@ var onceForDatabase sync.Once
 const DATABASE_FILE_NAME = "blockchain.boltdb"
 const BLOCKCHAIN_INFO_BUCKET_NAME = "blockchain"
 const BLOCKCHAIN_INFO_KEY_NAME = "checkpoint"
-
 const BLOCK_DATA_BUCKET_NAME = "blockdata"
 
 func GetBlockchainDB() *database.Database {
@@ -48,28 +50,27 @@ func GetBlockchainDB() *database.Database {
 	return db
 }
 
-func (block *Block) calculateHash() {
-	hash := sha256.Sum256([]byte(block.Data + block.PrevHash))
-	block.Hash = fmt.Sprintf("%x", hash)
-}
-func updateBlockchain(newBlock *Block) {
+func (b *blockchain) updateBlockchain(newBlock *Block) {
 	b.Height = newBlock.Height
 	b.LastHash = newBlock.Hash
 	byteBlockchainDataToSave, err := utils.ObjectToBytes(b)
 	utils.ErrHandler(err)
 	utils.ErrHandler(GetBlockchainDB().WriteByteDataToBucket(BLOCKCHAIN_INFO_BUCKET_NAME, BLOCKCHAIN_INFO_KEY_NAME, byteBlockchainDataToSave))
+
+	if b.Height%RECALCULATE_DIFFICULTY_INTERVAl == 0 {
+		b.Difficulty = b.recalculateDifficulty()
+	}
 }
-func saveNewBlock(newBlock *Block) {
+func (b *blockchain) saveNewBlock(newBlock *Block) {
 	byteBlockDataToSave, err := utils.ObjectToBytes(&newBlock)
 	utils.ErrHandler(err)
 	utils.ErrHandler(GetBlockchainDB().WriteByteDataToBucket(BLOCK_DATA_BUCKET_NAME, newBlock.Hash, byteBlockDataToSave))
 }
 func (b *blockchain) CreateBlockAndSave(data string) {
-	newBlock := Block{data, "", b.LastHash, b.Height + 1}
-	newBlock.calculateHash()
-
-	updateBlockchain(&newBlock)
-	saveNewBlock(&newBlock)
+	newBlock := Block{data, "", b.LastHash, b.Height + 1, b.Difficulty, int(time.Now().Unix()), 0}
+	newBlock.mine()
+	b.saveNewBlock(&newBlock)
+	b.updateBlockchain(&newBlock)
 }
 
 func GetBlockByHash(hash string) (*Block, error) {
@@ -94,8 +95,7 @@ func (b *blockchain) LoadBlockchain() {
 func GetBlockchain() *blockchain {
 	if b == nil {
 		onceForBlockchain.Do(func() {
-
-			b = &blockchain{"", 0}
+			b = &blockchain{"", 0, DEFAULT_DIFFICULTY}
 			b.LoadBlockchain()
 
 			if b.Height == 0 {
@@ -106,22 +106,20 @@ func GetBlockchain() *blockchain {
 	return b
 }
 
-func (b *blockchain) AllBlocks() []*Block {
-	allBlocks := []*Block{}
+func (b *blockchain) getBlocksFromLastBlock(number int) []*Block {
+	blockSlice := []*Block{}
 	lastHash := b.LastHash
-	for {
-		if lastHash == "" {
-			break
-		}
+	for i := 0; i < number; i++ {
 		block, err := GetBlockByHash(lastHash)
 		utils.ErrHandler(err)
-		allBlocks = append(allBlocks, block)
+		blockSlice = append(blockSlice, block)
 		lastHash = block.PrevHash
 	}
-
-	for i, j := 0, len(allBlocks)-1; i < j; i, j = i+1, j-1 {
-		allBlocks[i], allBlocks[j] = allBlocks[j], allBlocks[i]
+	for i, j := 0, len(blockSlice)-1; i < j; i, j = i+1, j-1 {
+		blockSlice[i], blockSlice[j] = blockSlice[j], blockSlice[i]
 	}
-
-	return allBlocks
+	return blockSlice
+}
+func (b *blockchain) AllBlocks() []*Block {
+	return GetBlockchain().getBlocksFromLastBlock(b.Height)
 }
