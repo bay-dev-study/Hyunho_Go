@@ -1,7 +1,6 @@
 package blockchain
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"nomad_coin/utils"
 	"strings"
@@ -25,17 +24,11 @@ func (b *blockchain) recalculateDifficulty() int {
 	return b.Difficulty
 }
 
-func (block *Block) calculateHash() string {
-	bytesFromObject, err := utils.ObjectToBytes(block)
-	utils.ErrHandler(err)
-	return fmt.Sprintf("%x", sha256.Sum256(bytesFromObject))
-}
-
 func (block *Block) mine() {
 	for {
 		targetPrefix := strings.Repeat("0", block.Difficulty)
 		block.Timestamp = int(time.Now().Unix())
-		hash := block.calculateHash()
+		hash := utils.HashObject(block)
 		fmt.Println(block)
 		fmt.Println(hash)
 		fmt.Printf("\n")

@@ -9,13 +9,13 @@ import (
 )
 
 type Block struct {
-	Data       string `json:"data"`
-	Hash       string `json:"hash"`
-	PrevHash   string `json:"prevHash,omitempty"`
-	Height     int    `json:"height"`
-	Difficulty int    `json:"difficulty"`
-	Timestamp  int    `json:"timestamp"`
-	Nonce      int    `json:"nonce"`
+	Hash         string `json:"hash"`
+	PrevHash     string `json:"prevHash,omitempty"`
+	Height       int    `json:"height"`
+	Difficulty   int    `json:"difficulty"`
+	Timestamp    int    `json:"timestamp"`
+	Nonce        int    `json:"nonce"`
+	Transactions []*Tx  `json:"transactions"`
 }
 
 type blockchain struct {
@@ -37,6 +37,8 @@ const DATABASE_FILE_NAME = "blockchain.boltdb"
 const BLOCKCHAIN_INFO_BUCKET_NAME = "blockchain"
 const BLOCKCHAIN_INFO_KEY_NAME = "checkpoint"
 const BLOCK_DATA_BUCKET_NAME = "blockdata"
+
+const DEFAULT_REWARD_FOR_MINING = 50
 
 func GetBlockchainDB() *database.Database {
 	if db == nil {
@@ -66,11 +68,13 @@ func (b *blockchain) saveNewBlock(newBlock *Block) {
 	utils.ErrHandler(err)
 	utils.ErrHandler(GetBlockchainDB().WriteByteDataToBucket(BLOCK_DATA_BUCKET_NAME, newBlock.Hash, byteBlockDataToSave))
 }
-func (b *blockchain) CreateBlockAndSave(data string) {
-	newBlock := Block{data, "", b.LastHash, b.Height + 1, b.Difficulty, int(time.Now().Unix()), 0}
+func (b *blockchain) ConfirmBlock() {
+	txSlice := append(GetMempool().Txs, b.makeCoinbaseTx("Hyunho", DEFAULT_REWARD_FOR_MINING))
+	newBlock := Block{Hash: "", PrevHash: b.LastHash, Height: b.Height + 1, Difficulty: b.Difficulty, Timestamp: int(time.Now().Unix()), Nonce: 0, Transactions: txSlice}
 	newBlock.mine()
 	b.saveNewBlock(&newBlock)
 	b.updateBlockchain(&newBlock)
+	GetMempool().cleanMempool()
 }
 
 func GetBlockByHash(hash string) (*Block, error) {
@@ -99,7 +103,7 @@ func GetBlockchain() *blockchain {
 			b.LoadBlockchain()
 
 			if b.Height == 0 {
-				b.CreateBlockAndSave("Genesis")
+				b.ConfirmBlock()
 			}
 		})
 	}
@@ -114,9 +118,6 @@ func (b *blockchain) getBlocksFromLastBlock(number int) []*Block {
 		utils.ErrHandler(err)
 		blockSlice = append(blockSlice, block)
 		lastHash = block.PrevHash
-	}
-	for i, j := 0, len(blockSlice)-1; i < j; i, j = i+1, j-1 {
-		blockSlice[i], blockSlice[j] = blockSlice[j], blockSlice[i]
 	}
 	return blockSlice
 }

@@ -27,12 +27,19 @@ func (u url) MarshalText() ([]byte, error) {
 	return []byte(url), nil
 }
 
-type blockPayload struct {
-	Data string `json:"data"`
-}
-
 type errorMessage struct {
 	ErrorMessage string `json:"errorMessage"`
+}
+
+type balanceResponse struct {
+	Address string `json:"address"`
+	Balance int    `json:"balance"`
+}
+
+type addTxPayload struct {
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Amount int    `json:"amount"`
 }
 
 func getDocument() []*documentData {
@@ -62,22 +69,13 @@ func handleStatus(rw http.ResponseWriter, r *http.Request) {
 }
 
 func handleBlocks(rw http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-		rw.Header().Add("content-type", "application/json")
-		jsonEncoder := json.NewEncoder(rw)
-		jsonEncodedAllBlocksInfo := getAllBlocks()
-		jsonEncoder.Encode(jsonEncodedAllBlocksInfo)
-	case "POST":
-		var blockDataToAdd blockPayload
-		rw.Header().Add("content-type", "application/json")
-		utils.ErrHandler(json.NewDecoder(r.Body).Decode(&blockDataToAdd))
-		blockchain.GetBlockchain().CreateBlockAndSave(blockDataToAdd.Data)
-		rw.WriteHeader(http.StatusCreated)
-	}
+	rw.Header().Add("content-type", "application/json")
+	jsonEncoder := json.NewEncoder(rw)
+	jsonEncodedAllBlocksInfo := getAllBlocks()
+	jsonEncoder.Encode(jsonEncodedAllBlocksInfo)
 }
 
-func blocks(rw http.ResponseWriter, r *http.Request) {
+func handleBlocksByHash(rw http.ResponseWriter, r *http.Request) {
 	blockHashInRawUrl := mux.Vars(r)
 	blockHash := blockHashInRawUrl["hash"]
 
@@ -90,12 +88,50 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handleBalance(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	address := vars["address"]
+	total := r.URL.Query().Get("total")
+
+	switch total {
+	case "true":
+		amount := blockchain.GetBlockchain().BalanceByAddress(address)
+		json.NewEncoder(rw).Encode(balanceResponse{address, amount})
+	default:
+		utils.ErrHandler(json.NewEncoder(rw).Encode(blockchain.GetBlockchain().GetUTxOfAddress(address)))
+	}
+}
+
+func handleConfirm(rw http.ResponseWriter, r *http.Request) {
+	blockchain.GetBlockchain().ConfirmBlock()
+	rw.WriteHeader(http.StatusCreated)
+}
+
+func handleMempool(rw http.ResponseWriter, r *http.Request) {
+	utils.ErrHandler(json.NewEncoder(rw).Encode(blockchain.GetMempool().Txs))
+}
+
+func handleTransactions(rw http.ResponseWriter, r *http.Request) {
+	var payload addTxPayload
+	utils.ErrHandler(json.NewDecoder(r.Body).Decode(&payload))
+	err := blockchain.GetMempool().AddTx(payload.From, payload.To, payload.Amount)
+	if err != nil {
+		json.NewEncoder(rw).Encode(errorMessage{"not enough funds"})
+		return
+	}
+	rw.WriteHeader(http.StatusCreated)
+}
+
 func Start(port int) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", handleRoot).Methods("GET")
 	router.HandleFunc("/status", handleStatus).Methods("GET")
-	router.HandleFunc("/blocks", handleBlocks).Methods("GET", "POST")
-	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", blocks).Methods("GET")
+	router.HandleFunc("/blocks", handleBlocks).Methods("GET")
+	router.HandleFunc("/confirm", handleConfirm).Methods("GET")
+	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", handleBlocksByHash).Methods("GET")
+	router.HandleFunc("/balance/{address}", handleBalance)
+	router.HandleFunc("/mempool", handleMempool)
+	router.HandleFunc("/transactions", handleTransactions).Methods("POST")
 
 	portInString := fmt.Sprintf(":%d", port)
 	rootUrlWithPort = fmt.Sprintf("http://localhost%s", portInString)
