@@ -6,12 +6,6 @@ import (
 	"sync"
 )
 
-type memoryPool struct {
-	Txs []*Tx
-}
-
-var mempool *memoryPool
-
 var onceForMempool sync.Once
 
 type Tx struct {
@@ -19,6 +13,10 @@ type Tx struct {
 	Timestamp int      `json:"timestamp"`
 	TxIns     []*TxIn  `json:"txIns"`
 	TxOuts    []*TxOut `json:"txOuts"`
+}
+
+func (tx *Tx) makeTxID() {
+	tx.TxID = utils.HashObject(tx)
 }
 
 type TxIn struct {
@@ -38,16 +36,7 @@ type UTxOut struct {
 	Amount int    `json:"amount"`
 }
 
-func (b *blockchain) BalanceByAddress(address string) int {
-	uTxSlice := b.GetUTxOfAddress(address)
-	totalAmount := 0
-	for _, uTx := range uTxSlice {
-		totalAmount += uTx.Amount
-	}
-	return totalAmount
-}
-
-func (b *blockchain) makeCoinbaseTx(to string, amount int) *Tx {
+func makeCoinbaseTx(to string, amount int) *Tx {
 	txIn := TxIn{"", -1, "COINBASE"}
 	txOut := TxOut{to, amount}
 	tx := Tx{TxID: "", Timestamp: utils.GetNowUnixTimestamp(), TxIns: []*TxIn{&txIn}, TxOuts: []*TxOut{&txOut}}
@@ -57,8 +46,8 @@ func (b *blockchain) makeCoinbaseTx(to string, amount int) *Tx {
 
 type usedTxOutsFlag map[string]bool
 
-func (b *blockchain) checkUsedTxOuts(address string) usedTxOutsFlag {
-	allBlocks := b.AllBlocks()
+func checkUsedTxOuts(address string) usedTxOutsFlag {
+	allBlocks := AllBlocks()
 	usedTxInsMap := usedTxOutsFlag{}
 	for _, block := range allBlocks {
 		for _, tx := range block.Transactions {
@@ -71,14 +60,14 @@ func (b *blockchain) checkUsedTxOuts(address string) usedTxOutsFlag {
 	}
 	return usedTxInsMap
 }
-func (b *blockchain) GetUTxOfAddress(address string) []*UTxOut {
-	allBlocks := b.AllBlocks()
-	usedTxOutsFlag := b.checkUsedTxOuts(address)
+func GetUTxOfAddress(address string) []*UTxOut {
+	allBlocks := AllBlocks()
+	usedTxOutsFlag := checkUsedTxOuts(address)
 	UTxOutSlice := []*UTxOut{}
 	for _, block := range allBlocks {
 		for _, tx := range block.Transactions {
 			for index, txOut := range tx.TxOuts {
-				if txOut.Owner == address && !GetMempool().isInMempool(tx.TxID) {
+				if txOut.Owner == address && !isInMempool(tx.TxID) {
 					if _, exists := usedTxOutsFlag[tx.TxID]; !exists {
 						uTxOut := UTxOut{
 							TxID:   tx.TxID,
@@ -94,8 +83,18 @@ func (b *blockchain) GetUTxOfAddress(address string) []*UTxOut {
 	}
 	return UTxOutSlice
 }
-func (b *blockchain) MakeTx(from, to string, amount int) (*Tx, error) {
-	uTxSlice := b.GetUTxOfAddress(from)
+
+func BalanceByAddress(address string) int {
+	uTxSlice := GetUTxOfAddress(address)
+	totalAmount := 0
+	for _, uTx := range uTxSlice {
+		totalAmount += uTx.Amount
+	}
+	return totalAmount
+}
+
+func MakeTx(from, to string, amount int) (*Tx, error) {
+	uTxSlice := GetUTxOfAddress(from)
 	totalAmount := 0
 	txIns := []*TxIn{}
 	for _, uTx := range uTxSlice {
@@ -129,21 +128,18 @@ func (b *blockchain) MakeTx(from, to string, amount int) (*Tx, error) {
 	return &tx, nil
 }
 
-func (tx *Tx) makeTxID() {
-	tx.TxID = utils.HashObject(tx)
+type memoryPool struct {
+	Txs []*Tx
 }
 
-func GetMempool() *memoryPool {
-	if mempool == nil {
-		onceForMempool.Do(func() {
-			mempool = &memoryPool{}
-		})
-	}
-	return mempool
+var mempool *memoryPool
+
+func (m *memoryPool) cleanMempool() {
+	m.Txs = []*Tx{}
 }
 
 func (m *memoryPool) AddTx(from, to string, amount int) error {
-	tx, err := GetBlockchain().MakeTx(from, to, amount)
+	tx, err := MakeTx(from, to, amount)
 	if err != nil {
 		return err
 	}
@@ -151,8 +147,8 @@ func (m *memoryPool) AddTx(from, to string, amount int) error {
 	return nil
 }
 
-func (m *memoryPool) isInMempool(txId string) bool {
-	for _, tx := range m.Txs {
+func isInMempool(txId string) bool {
+	for _, tx := range GetMempool().Txs {
 		for _, txIn := range tx.TxIns {
 			if txId == txIn.TxID {
 				return true
@@ -162,6 +158,9 @@ func (m *memoryPool) isInMempool(txId string) bool {
 	return false
 }
 
-func (m *memoryPool) cleanMempool() {
-	m.Txs = []*Tx{}
+func GetMempool() *memoryPool {
+	onceForMempool.Do(func() {
+		mempool = &memoryPool{}
+	})
+	return mempool
 }

@@ -53,7 +53,7 @@ func getDocument() []*documentData {
 }
 
 func getAllBlocks() []*blockchain.Block {
-	return blockchain.GetBlockchain().AllBlocks()
+	return blockchain.AllBlocks()
 }
 
 func handleRoot(rw http.ResponseWriter, r *http.Request) {
@@ -95,10 +95,10 @@ func handleBalance(rw http.ResponseWriter, r *http.Request) {
 
 	switch total {
 	case "true":
-		amount := blockchain.GetBlockchain().BalanceByAddress(address)
+		amount := blockchain.BalanceByAddress(address)
 		json.NewEncoder(rw).Encode(balanceResponse{address, amount})
 	default:
-		utils.ErrHandler(json.NewEncoder(rw).Encode(blockchain.GetBlockchain().GetUTxOfAddress(address)))
+		utils.ErrHandler(json.NewEncoder(rw).Encode(blockchain.GetUTxOfAddress(address)))
 	}
 }
 

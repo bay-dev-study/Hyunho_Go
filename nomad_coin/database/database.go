@@ -27,14 +27,6 @@ func (db *Database) OpenDB(db_file_name string) error {
 	return err_db_open
 }
 
-func CloseAllOpenedDB() {
-	for _, boltDB := range openedBoltDBInstances {
-		if boltDB != nil {
-			boltDB.Close()
-		}
-	}
-}
-
 func (db *Database) CreateBucketWithStringName(name string) error {
 	if db.database != nil {
 		err := db.database.Update(func(tx *bolt.Tx) error {
@@ -68,4 +60,12 @@ func (db *Database) WriteByteDataToBucket(bucketName string, key string, data []
 		return err
 	}
 	return ErrDatabaseAccessWithoutOpen
+}
+
+func CloseAllOpenedDB() {
+	for _, boltDB := range openedBoltDBInstances {
+		if boltDB != nil {
+			boltDB.Close()
+		}
+	}
 }

@@ -12,18 +12,6 @@ const TARGET_TIME_INTERVAL_DIFFICULTY int = 10
 const TARGET_TIME_INTERVAL_DIFFICULTY_ALLOWANCE int = 3
 const DEFAULT_DIFFICULTY int = 2
 
-func (b *blockchain) recalculateDifficulty() int {
-	blocks := b.getBlocksFromLastBlock(RECALCULATE_DIFFICULTY_INTERVAl)
-	currentTimeInterval := blocks[RECALCULATE_DIFFICULTY_INTERVAl-1].Timestamp/60 - blocks[0].Timestamp/60
-	if currentTimeInterval >= TARGET_TIME_INTERVAL_DIFFICULTY+TARGET_TIME_INTERVAL_DIFFICULTY_ALLOWANCE {
-		return b.Difficulty - 1
-	}
-	if currentTimeInterval <= TARGET_TIME_INTERVAL_DIFFICULTY-TARGET_TIME_INTERVAL_DIFFICULTY_ALLOWANCE {
-		return b.Difficulty + 1
-	}
-	return b.Difficulty
-}
-
 func (block *Block) mine() {
 	for {
 		targetPrefix := strings.Repeat("0", block.Difficulty)
@@ -38,4 +26,17 @@ func (block *Block) mine() {
 		}
 		block.Nonce++
 	}
+}
+
+func recalculateDifficulty() int {
+	currentDifficulty := GetBlockchain().Difficulty
+	blocks := getBlocksFromLastBlock(RECALCULATE_DIFFICULTY_INTERVAl)
+	currentTimeInterval := blocks[RECALCULATE_DIFFICULTY_INTERVAl-1].Timestamp/60 - blocks[0].Timestamp/60
+	if currentTimeInterval >= TARGET_TIME_INTERVAL_DIFFICULTY+TARGET_TIME_INTERVAL_DIFFICULTY_ALLOWANCE {
+		return currentDifficulty - 1
+	}
+	if currentTimeInterval <= TARGET_TIME_INTERVAL_DIFFICULTY-TARGET_TIME_INTERVAL_DIFFICULTY_ALLOWANCE {
+		return currentDifficulty + 1
+	}
+	return currentDifficulty
 }

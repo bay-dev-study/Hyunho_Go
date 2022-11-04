@@ -40,18 +40,6 @@ const BLOCK_DATA_BUCKET_NAME = "blockdata"
 
 const DEFAULT_REWARD_FOR_MINING = 50
 
-func GetBlockchainDB() *database.Database {
-	if db == nil {
-		onceForDatabase.Do(func() {
-			db = &database.Database{}
-			utils.ErrHandler(db.OpenDB(DATABASE_FILE_NAME))
-			utils.ErrHandler(db.CreateBucketWithStringName(BLOCKCHAIN_INFO_BUCKET_NAME))
-			utils.ErrHandler(db.CreateBucketWithStringName(BLOCK_DATA_BUCKET_NAME))
-		})
-	}
-	return db
-}
-
 func (b *blockchain) updateBlockchain(newBlock *Block) {
 	b.Height = newBlock.Height
 	b.LastHash = newBlock.Hash
@@ -60,21 +48,44 @@ func (b *blockchain) updateBlockchain(newBlock *Block) {
 	utils.ErrHandler(GetBlockchainDB().WriteByteDataToBucket(BLOCKCHAIN_INFO_BUCKET_NAME, BLOCKCHAIN_INFO_KEY_NAME, byteBlockchainDataToSave))
 
 	if b.Height%RECALCULATE_DIFFICULTY_INTERVAl == 0 {
-		b.Difficulty = b.recalculateDifficulty()
+		b.Difficulty = recalculateDifficulty()
 	}
 }
-func (b *blockchain) saveNewBlock(newBlock *Block) {
+
+func (b *blockchain) ConfirmBlock() {
+	txSlice := append(GetMempool().Txs, makeCoinbaseTx("Hyunho", DEFAULT_REWARD_FOR_MINING))
+	newBlock := Block{Hash: "", PrevHash: b.LastHash, Height: b.Height + 1, Difficulty: b.Difficulty, Timestamp: int(time.Now().Unix()), Nonce: 0, Transactions: txSlice}
+	newBlock.mine()
+	saveNewBlock(&newBlock)
+	b.updateBlockchain(&newBlock)
+	GetMempool().cleanMempool()
+}
+
+func saveNewBlock(newBlock *Block) {
 	byteBlockDataToSave, err := utils.ObjectToBytes(&newBlock)
 	utils.ErrHandler(err)
 	utils.ErrHandler(GetBlockchainDB().WriteByteDataToBucket(BLOCK_DATA_BUCKET_NAME, newBlock.Hash, byteBlockDataToSave))
 }
-func (b *blockchain) ConfirmBlock() {
-	txSlice := append(GetMempool().Txs, b.makeCoinbaseTx("Hyunho", DEFAULT_REWARD_FOR_MINING))
-	newBlock := Block{Hash: "", PrevHash: b.LastHash, Height: b.Height + 1, Difficulty: b.Difficulty, Timestamp: int(time.Now().Unix()), Nonce: 0, Transactions: txSlice}
-	newBlock.mine()
-	b.saveNewBlock(&newBlock)
-	b.updateBlockchain(&newBlock)
-	GetMempool().cleanMempool()
+
+func getBlocksFromLastBlock(number int) []*Block {
+	blockSlice := []*Block{}
+	lastHash := GetBlockchain().LastHash
+	for i := 0; i < number; i++ {
+		block, err := GetBlockByHash(lastHash)
+		utils.ErrHandler(err)
+		blockSlice = append(blockSlice, block)
+		lastHash = block.PrevHash
+	}
+	return blockSlice
+}
+func GetBlockchainDB() *database.Database {
+	onceForDatabase.Do(func() {
+		db = &database.Database{}
+		utils.ErrHandler(db.OpenDB(DATABASE_FILE_NAME))
+		utils.ErrHandler(db.CreateBucketWithStringName(BLOCKCHAIN_INFO_BUCKET_NAME))
+		utils.ErrHandler(db.CreateBucketWithStringName(BLOCK_DATA_BUCKET_NAME))
+	})
+	return db
 }
 
 func GetBlockByHash(hash string) (*Block, error) {
@@ -88,7 +99,7 @@ func GetBlockByHash(hash string) (*Block, error) {
 	return &block, nil
 }
 
-func (b *blockchain) LoadBlockchain() {
+func LoadBlockchain() {
 	data, err := GetBlockchainDB().ReadByteDataFromBucket(BLOCKCHAIN_INFO_BUCKET_NAME, BLOCKCHAIN_INFO_KEY_NAME)
 	utils.ErrHandler(err)
 	if data != nil {
@@ -97,30 +108,17 @@ func (b *blockchain) LoadBlockchain() {
 }
 
 func GetBlockchain() *blockchain {
-	if b == nil {
-		onceForBlockchain.Do(func() {
-			b = &blockchain{"", 0, DEFAULT_DIFFICULTY}
-			b.LoadBlockchain()
+	onceForBlockchain.Do(func() {
+		b = &blockchain{"", 0, DEFAULT_DIFFICULTY}
+		LoadBlockchain()
 
-			if b.Height == 0 {
-				b.ConfirmBlock()
-			}
-		})
-	}
+		if b.Height == 0 {
+			b.ConfirmBlock()
+		}
+	})
 	return b
 }
 
-func (b *blockchain) getBlocksFromLastBlock(number int) []*Block {
-	blockSlice := []*Block{}
-	lastHash := b.LastHash
-	for i := 0; i < number; i++ {
-		block, err := GetBlockByHash(lastHash)
-		utils.ErrHandler(err)
-		blockSlice = append(blockSlice, block)
-		lastHash = block.PrevHash
-	}
-	return blockSlice
-}
-func (b *blockchain) AllBlocks() []*Block {
-	return GetBlockchain().getBlocksFromLastBlock(b.Height)
+func AllBlocks() []*Block {
+	return getBlocksFromLastBlock(GetBlockchain().Height)
 }

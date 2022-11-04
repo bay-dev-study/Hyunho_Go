@@ -1,10 +1,12 @@
 {{define "block"}}
  <div>
     <ul>
-        <li>{{ .Data }}</li>
+        <li>{{ .Timestamp }}</li>
         <li>{{ .Hash }}</li>
         {{if .PrevHash }}
         <li>{{ .PrevHash }}</li>
+        <li>{{ .Difficulty }}</li>
+        <li>{{ .Nonce }}</li>
         {{end}}
     </ul>
     </div>

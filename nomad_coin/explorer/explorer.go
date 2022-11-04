@@ -26,7 +26,7 @@ type homeData struct {
 }
 
 func home(rw http.ResponseWriter, r *http.Request) {
-	data := homeData{"Home", blockchain.GetBlockchain().AllBlocks()}
+	data := homeData{"Home", blockchain.AllBlocks()}
 	templates.ExecuteTemplate(rw, "home", data)
 }
 
