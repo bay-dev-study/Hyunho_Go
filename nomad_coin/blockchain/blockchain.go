@@ -4,6 +4,7 @@ import (
 	"errors"
 	"nomad_coin/database"
 	"nomad_coin/utils"
+	"nomad_coin/wallet"
 	"sync"
 	"time"
 )
@@ -53,7 +54,7 @@ func (b *blockchain) updateBlockchain(newBlock *Block) {
 }
 
 func (b *blockchain) ConfirmBlock() {
-	txSlice := append(GetMempool().Txs, makeCoinbaseTx("Hyunho", DEFAULT_REWARD_FOR_MINING))
+	txSlice := append(GetMempool().Txs, makeCoinbaseTx(wallet.GetWallet().Address, DEFAULT_REWARD_FOR_MINING))
 	newBlock := Block{Hash: "", PrevHash: b.LastHash, Height: b.Height + 1, Difficulty: b.Difficulty, Timestamp: int(time.Now().Unix()), Nonce: 0, Transactions: txSlice}
 	newBlock.mine()
 	saveNewBlock(&newBlock)
@@ -77,6 +78,22 @@ func getBlocksFromLastBlock(number int) []*Block {
 		lastHash = block.PrevHash
 	}
 	return blockSlice
+}
+
+func getAllTx() []*Tx {
+	tx_slice := []*Tx{}
+	for _, block := range AllBlocks() {
+		tx_slice = append(tx_slice, block.Transactions...)
+	}
+	return tx_slice
+}
+func findTxWithTxId(TxId string) *Tx {
+	for _, tx := range getAllTx() {
+		if tx.TxId == TxId {
+			return tx
+		}
+	}
+	return nil
 }
 func GetBlockchainDB() *database.Database {
 	onceForDatabase.Do(func() {

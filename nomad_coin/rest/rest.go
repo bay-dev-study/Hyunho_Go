@@ -116,7 +116,8 @@ func handleTransactions(rw http.ResponseWriter, r *http.Request) {
 	utils.ErrHandler(json.NewDecoder(r.Body).Decode(&payload))
 	err := blockchain.GetMempool().AddTx(payload.From, payload.To, payload.Amount)
 	if err != nil {
-		json.NewEncoder(rw).Encode(errorMessage{"not enough funds"})
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(errorMessage{err.Error()})
 		return
 	}
 	rw.WriteHeader(http.StatusCreated)

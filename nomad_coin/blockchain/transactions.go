@@ -3,35 +3,45 @@ package blockchain
 import (
 	"errors"
 	"nomad_coin/utils"
+	"nomad_coin/wallet"
 	"sync"
 )
 
 var onceForMempool sync.Once
 
+var ErrNotEnoughBalance = errors.New("not enough balance")
+
+var ErrInvalidSignature = errors.New("invalid signature")
+
 type Tx struct {
-	TxID      string   `json:"id"`
+	TxId      string   `json:"id"`
 	Timestamp int      `json:"timestamp"`
 	TxIns     []*TxIn  `json:"txIns"`
 	TxOuts    []*TxOut `json:"txOuts"`
 }
 
 func (tx *Tx) makeTxID() {
-	tx.TxID = utils.HashObject(tx)
+	tx.TxId = utils.HashObject(tx)
+}
+func (tx *Tx) signTxIns() {
+	for _, txIn := range tx.TxIns {
+		txIn.Signature = wallet.Sign(tx.TxId, wallet.GetWallet())
+	}
 }
 
 type TxIn struct {
-	TxID  string `json:"txId"`
-	Index int    `json:"index"`
-	Owner string `json:"owner"`
+	TxId      string `json:"txId"`
+	Index     int    `json:"index"`
+	Signature string `json:"signature"`
 }
 
 type TxOut struct {
-	Owner  string `json:"owner"`
-	Amount int    `json:"amount"`
+	Address string `json:"address"`
+	Amount  int    `json:"amount"`
 }
 
 type UTxOut struct {
-	TxID   string `json:"txId"`
+	TxId   string `json:"txId"`
 	Index  int    `json:"index"`
 	Amount int    `json:"amount"`
 }
@@ -39,7 +49,7 @@ type UTxOut struct {
 func makeCoinbaseTx(to string, amount int) *Tx {
 	txIn := TxIn{"", -1, "COINBASE"}
 	txOut := TxOut{to, amount}
-	tx := Tx{TxID: "", Timestamp: utils.GetNowUnixTimestamp(), TxIns: []*TxIn{&txIn}, TxOuts: []*TxOut{&txOut}}
+	tx := Tx{TxId: "", Timestamp: utils.GetNowUnixTimestamp(), TxIns: []*TxIn{&txIn}, TxOuts: []*TxOut{&txOut}}
 	tx.makeTxID()
 	return &tx
 }
@@ -52,14 +62,34 @@ func checkUsedTxOuts(address string) usedTxOutsFlag {
 	for _, block := range allBlocks {
 		for _, tx := range block.Transactions {
 			for _, txIn := range tx.TxIns {
-				if address == txIn.Owner {
-					usedTxInsMap[txIn.TxID] = true
+				if txIn.Signature == "COINBASE" {
+					break
+				}
+				txOut := findTxWithTxId(txIn.TxId).TxOuts[txIn.Index]
+				if address == txOut.Address {
+					usedTxInsMap[txIn.TxId] = true
 				}
 			}
 		}
 	}
 	return usedTxInsMap
 }
+
+func validateTx(tx *Tx) bool {
+	for _, txIn := range tx.TxIns {
+		txMatchesTxId := findTxWithTxId(txIn.TxId)
+		if txMatchesTxId == nil {
+			return false
+		}
+		txOut := txMatchesTxId.TxOuts[txIn.Index]
+		isValid := wallet.Verify(txIn.Signature, tx.TxId, txOut.Address)
+		if !isValid {
+			return false
+		}
+	}
+	return true
+}
+
 func GetUTxOfAddress(address string) []*UTxOut {
 	allBlocks := AllBlocks()
 	usedTxOutsFlag := checkUsedTxOuts(address)
@@ -67,10 +97,10 @@ func GetUTxOfAddress(address string) []*UTxOut {
 	for _, block := range allBlocks {
 		for _, tx := range block.Transactions {
 			for index, txOut := range tx.TxOuts {
-				if txOut.Owner == address && !isInMempool(tx.TxID) {
-					if _, exists := usedTxOutsFlag[tx.TxID]; !exists {
+				if txOut.Address == address && !isInMempool(tx.TxId) {
+					if _, exists := usedTxOutsFlag[tx.TxId]; !exists {
 						uTxOut := UTxOut{
-							TxID:   tx.TxID,
+							TxId:   tx.TxId,
 							Index:  index,
 							Amount: txOut.Amount,
 						}
@@ -100,9 +130,9 @@ func MakeTx(from, to string, amount int) (*Tx, error) {
 	for _, uTx := range uTxSlice {
 		totalAmount += uTx.Amount
 		txIns = append(txIns, &TxIn{
-			TxID:  uTx.TxID,
-			Index: uTx.Index,
-			Owner: from,
+			TxId:      uTx.TxId,
+			Index:     uTx.Index,
+			Signature: "",
 		})
 		if totalAmount >= amount {
 			break
@@ -110,22 +140,27 @@ func MakeTx(from, to string, amount int) (*Tx, error) {
 	}
 
 	txOuts := []*TxOut{}
-	txOuts = append(txOuts, &TxOut{Owner: to, Amount: amount})
+	txOuts = append(txOuts, &TxOut{Address: to, Amount: amount})
 	change := totalAmount - amount
 	if change > 0 {
-		txOuts = append(txOuts, &TxOut{Owner: from, Amount: change})
+		txOuts = append(txOuts, &TxOut{Address: from, Amount: change})
 	}
 	if change < 0 {
-		return nil, errors.New("not enough balance")
+		return nil, ErrNotEnoughBalance
 	}
-	tx := Tx{
-		TxID:      "",
+	tx := &Tx{
+		TxId:      "",
 		Timestamp: utils.GetNowUnixTimestamp(),
 		TxIns:     txIns,
 		TxOuts:    txOuts,
 	}
 	tx.makeTxID()
-	return &tx, nil
+	tx.signTxIns()
+	isValid := validateTx(tx)
+	if !isValid {
+		return nil, ErrInvalidSignature
+	}
+	return tx, nil
 }
 
 type memoryPool struct {
@@ -150,7 +185,7 @@ func (m *memoryPool) AddTx(from, to string, amount int) error {
 func isInMempool(txId string) bool {
 	for _, tx := range GetMempool().Txs {
 		for _, txIn := range tx.TxIns {
-			if txId == txIn.TxID {
+			if txId == txIn.TxId {
 				return true
 			}
 		}

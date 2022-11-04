@@ -64,7 +64,7 @@ func decodeHexStringToBigInts(hexString string) (*big.Int, *big.Int) {
 	return a, b
 }
 
-func sign(payloadInHexString string, w *wallet) string {
+func Sign(payloadInHexString string, w *wallet) string {
 	payloadAsBytes, err := hex.DecodeString(payloadInHexString)
 	utils.ErrHandler(err)
 	r, s, err := ecdsa.Sign(rand.Reader, w.privateKey, payloadAsBytes)
@@ -72,7 +72,7 @@ func sign(payloadInHexString string, w *wallet) string {
 	return encodeBigIntsToHexString(r, s)
 }
 
-func verify(signature, payloadInHexString, address string) bool {
+func Verify(signature, payloadInHexString, address string) bool {
 	r, s := decodeHexStringToBigInts(signature)
 	x, y := decodeHexStringToBigInts(address)
 	publicKey := &ecdsa.PublicKey{
@@ -112,11 +112,4 @@ func GetWallet() *wallet {
 		loadedWallet.Address = getPublicKeyInString(loadedWallet.privateKey)
 	})
 	return loadedWallet
-}
-
-func Start() {
-	payload := hex.EncodeToString([]byte("Hi"))
-	signature := sign(payload, GetWallet())
-	fmt.Println(signature)
-	fmt.Println(verify(signature, payload, GetWallet().Address))
 }

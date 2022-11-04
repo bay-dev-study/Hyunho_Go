@@ -14,7 +14,7 @@ POST http://localhost:4000/transactions HTTP/1.1
 content-type: application/json
 
 {
-    "from": "Hyunho",
+    "from": "52ca0b29ddf5d29f6d4e27abd3ae64fe4a93daddb6266213070750641fcebd2f095a4d95a1eca87e0a4e3b0566b2177b552857db4f17cbc200f289dd42c40d56",
     "to": "Nico",
     "amount": 20
 }
@@ -25,10 +25,10 @@ GET http://localhost:4000/mempool HTTP/1.1
 
 ###
 
-GET http://localhost:4000/balance/Hyunho HTTP/1.1
+GET http://localhost:4000/balance/52ca0b29ddf5d29f6d4e27abd3ae64fe4a93daddb6266213070750641fcebd2f095a4d95a1eca87e0a4e3b0566b2177b552857db4f17cbc200f289dd42c40d56 HTTP/1.1
 
 ###
-GET http://localhost:4000/balance/Hyunho?total=true HTTP/1.1
+GET http://localhost:4000/balance/52ca0b29ddf5d29f6d4e27abd3ae64fe4a93daddb6266213070750641fcebd2f095a4d95a1eca87e0a4e3b0566b2177b552857db4f17cbc200f289dd42c40d56?total=true HTTP/1.1
 
 ###
 GET http://localhost:4000/confirm HTTP/1.1
