@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -21,4 +22,12 @@ func HashObject(i interface{}) string {
 	bytesFromObject, err := ObjectToBytes(i)
 	ErrHandler(err)
 	return fmt.Sprintf("%x", sha256.Sum256(bytesFromObject))
+}
+
+func Splitter(s, sep string, index int) string {
+	s_slice := strings.Split(s, sep)
+	if index >= len(s_slice) {
+		return ""
+	}
+	return s_slice[index]
 }

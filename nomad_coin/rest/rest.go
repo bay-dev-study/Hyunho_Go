@@ -6,12 +6,15 @@ import (
 	"log"
 	"net/http"
 	"nomad_coin/blockchain"
+	"nomad_coin/p2p"
 	"nomad_coin/utils"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 var rootUrlWithPort string
+var portInString string
 
 type url string
 
@@ -40,6 +43,11 @@ type addTxPayload struct {
 	From   string `json:"from"`
 	To     string `json:"to"`
 	Amount int    `json:"amount"`
+}
+
+type addPeerPayload struct {
+	Address string `json:"address"`
+	Port    string `json:"port"`
 }
 
 func getDocument() []*documentData {
@@ -123,6 +131,31 @@ func handleTransactions(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusCreated)
 }
 
+func handlerWebsocketUpgrade(rw http.ResponseWriter, r *http.Request) {
+	openPort := r.URL.Query().Get("openPort")
+	ip := utils.Splitter(r.RemoteAddr, ":", 0)
+
+	var upgrader = websocket.Upgrader{}
+	upgrader.CheckOrigin = func(r *http.Request) bool {
+		return openPort != "" && ip != ""
+	}
+	conn, err := upgrader.Upgrade(rw, r, nil)
+	utils.ErrHandler(err)
+	p2p.InitPeer(conn, ip, openPort)
+}
+
+func handlePeer(rw http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST":
+		var payload addPeerPayload
+		json.NewDecoder(r.Body).Decode(&payload)
+		p2p.AddPeer(payload.Address, payload.Port, portInString)
+		rw.WriteHeader(http.StatusOK)
+	case "GET":
+		json.NewEncoder(rw).Encode(p2p.Peers)
+	}
+}
+
 func Start(port int) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", handleRoot).Methods("GET")
@@ -133,8 +166,10 @@ func Start(port int) {
 	router.HandleFunc("/balance/{address}", handleBalance)
 	router.HandleFunc("/mempool", handleMempool)
 	router.HandleFunc("/transactions", handleTransactions).Methods("POST")
+	router.HandleFunc("/ws", handlerWebsocketUpgrade).Methods("GET")
+	router.HandleFunc("/peer", handlePeer).Methods("GET", "POST")
 
-	portInString := fmt.Sprintf(":%d", port)
+	portInString = fmt.Sprintf(":%d", port)
 	rootUrlWithPort = fmt.Sprintf("http://localhost%s", portInString)
 
 	fmt.Printf("Rest server listening on %s\n", rootUrlWithPort)
