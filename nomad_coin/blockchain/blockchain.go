@@ -105,6 +105,13 @@ func GetBlockchainDB() *database.Database {
 	return db
 }
 
+func GetNewestBlock() *Block {
+	lastHash := GetBlockchain().LastHash
+	block, err := GetBlockByHash(lastHash)
+	utils.ErrHandler(err)
+	return block
+}
+
 func GetBlockByHash(hash string) (*Block, error) {
 	data, err := GetBlockchainDB().ReadByteDataFromBucket(BLOCK_DATA_BUCKET_NAME, hash)
 	utils.ErrHandler(err)

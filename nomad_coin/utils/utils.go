@@ -2,6 +2,7 @@ package utils
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -30,4 +31,10 @@ func Splitter(s, sep string, index int) string {
 		return ""
 	}
 	return s_slice[index]
+}
+
+func ToJson(i interface{}) []byte {
+	encodedBytes, err := json.Marshal(&i)
+	ErrHandler(err)
+	return encodedBytes
 }
