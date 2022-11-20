@@ -1,7 +1,6 @@
 package blockchain
 
 import (
-	"fmt"
 	"nomad_coin/utils"
 	"strings"
 	"time"
@@ -17,9 +16,9 @@ func (block *Block) mine() {
 		targetPrefix := strings.Repeat("0", block.Difficulty)
 		block.Timestamp = int(time.Now().Unix())
 		hash := utils.HashObject(block)
-		fmt.Println(block)
-		fmt.Println(hash)
-		fmt.Printf("\n")
+		// fmt.Println(block)
+		// fmt.Println(hash)
+		// fmt.Printf("\n")
 		if strings.HasPrefix(hash, targetPrefix) {
 			block.Hash = hash
 			break

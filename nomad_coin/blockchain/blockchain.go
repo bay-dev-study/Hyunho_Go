@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"errors"
+	"fmt"
 	"nomad_coin/database"
 	"nomad_coin/utils"
 	"nomad_coin/wallet"
@@ -23,18 +24,21 @@ type blockchain struct {
 	LastHash   string
 	Height     int
 	Difficulty int
+	mutex      sync.Mutex
 }
 
 var ErrNotFound = errors.New("block not found")
 
 var db *database.Database
 
-var b *blockchain
+var b *blockchain = &blockchain{Difficulty: DEFAULT_DIFFICULTY}
 
 var onceForBlockchain sync.Once
 var onceForDatabase sync.Once
 
-const DATABASE_FILE_NAME = "blockchain.boltdb"
+var databaseFileName string
+
+const DATABASE_FILE_FORMAT = "%s.boltdb"
 const BLOCKCHAIN_INFO_BUCKET_NAME = "blockchain"
 const BLOCKCHAIN_INFO_KEY_NAME = "checkpoint"
 const BLOCK_DATA_BUCKET_NAME = "blockdata"
@@ -44,10 +48,8 @@ const DEFAULT_REWARD_FOR_MINING = 50
 func (b *blockchain) updateBlockchain(newBlock *Block) {
 	b.Height = newBlock.Height
 	b.LastHash = newBlock.Hash
-	byteBlockchainDataToSave, err := utils.ObjectToBytes(b)
-	utils.ErrHandler(err)
-	utils.ErrHandler(GetBlockchainDB().WriteByteDataToBucket(BLOCKCHAIN_INFO_BUCKET_NAME, BLOCKCHAIN_INFO_KEY_NAME, byteBlockchainDataToSave))
 
+	persistBlockhain(b)
 	if b.Height%RECALCULATE_DIFFICULTY_INTERVAl == 0 {
 		b.Difficulty = recalculateDifficulty()
 	}
@@ -62,6 +64,42 @@ func (b *blockchain) ConfirmBlock() {
 	GetMempool().cleanMempool()
 }
 
+func (b *blockchain) ReplaceAllBlocks(allBlocks []*Block) {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
+	b.Difficulty = allBlocks[0].Difficulty
+	b.Height = allBlocks[0].Height
+	b.LastHash = allBlocks[0].Hash
+	persistBlockhain(b)
+	db.EmptyBucket(BLOCK_DATA_BUCKET_NAME)
+	for _, block := range allBlocks {
+		saveNewBlock(block)
+	}
+}
+
+func (b *blockchain) AddPeerBlock(newBlock *Block) {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+	mempool.mutex.Lock()
+	defer mempool.mutex.Unlock()
+
+	b.Height = newBlock.Height
+	b.Difficulty = newBlock.Difficulty
+	b.LastHash = newBlock.Hash
+
+	persistBlockhain(b)
+	saveNewBlock(newBlock)
+
+	GetMempool().cleanMempool()
+}
+
+func persistBlockhain(b *blockchain) {
+	byteBlockchainDataToSave, err := utils.ObjectToBytes(b)
+	utils.ErrHandler(err)
+	utils.ErrHandler(GetBlockchainDB().WriteByteDataToBucket(BLOCKCHAIN_INFO_BUCKET_NAME, BLOCKCHAIN_INFO_KEY_NAME, byteBlockchainDataToSave))
+}
+
 func saveNewBlock(newBlock *Block) {
 	byteBlockDataToSave, err := utils.ObjectToBytes(&newBlock)
 	utils.ErrHandler(err)
@@ -69,6 +107,7 @@ func saveNewBlock(newBlock *Block) {
 }
 
 func getBlocksFromLastBlock(number int) []*Block {
+
 	blockSlice := []*Block{}
 	lastHash := GetBlockchain().LastHash
 	for i := 0; i < number; i++ {
@@ -95,10 +134,15 @@ func findTxWithTxId(TxId string) *Tx {
 	}
 	return nil
 }
+
+func SetBlockchainDatabaseFileName(port string) {
+	databaseFileName = fmt.Sprintf(DATABASE_FILE_FORMAT, port)
+}
+
 func GetBlockchainDB() *database.Database {
 	onceForDatabase.Do(func() {
 		db = &database.Database{}
-		utils.ErrHandler(db.OpenDB(DATABASE_FILE_NAME))
+		utils.ErrHandler(db.OpenDB(databaseFileName))
 		utils.ErrHandler(db.CreateBucketWithStringName(BLOCKCHAIN_INFO_BUCKET_NAME))
 		utils.ErrHandler(db.CreateBucketWithStringName(BLOCK_DATA_BUCKET_NAME))
 	})
@@ -106,6 +150,9 @@ func GetBlockchainDB() *database.Database {
 }
 
 func GetNewestBlock() *Block {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
 	lastHash := GetBlockchain().LastHash
 	block, err := GetBlockByHash(lastHash)
 	utils.ErrHandler(err)
@@ -133,7 +180,6 @@ func LoadBlockchain() {
 
 func GetBlockchain() *blockchain {
 	onceForBlockchain.Do(func() {
-		b = &blockchain{"", 0, DEFAULT_DIFFICULTY}
 		LoadBlockchain()
 
 		if b.Height == 0 {
@@ -144,5 +190,7 @@ func GetBlockchain() *blockchain {
 }
 
 func AllBlocks() []*Block {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
 	return getBlocksFromLastBlock(GetBlockchain().Height)
 }

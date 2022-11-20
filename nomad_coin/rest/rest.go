@@ -8,13 +8,14 @@ import (
 	"nomad_coin/blockchain"
 	"nomad_coin/p2p"
 	"nomad_coin/utils"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
 var rootUrlWithPort string
-var portInString string
+var PortInString string
 
 type url string
 
@@ -112,22 +113,24 @@ func handleBalance(rw http.ResponseWriter, r *http.Request) {
 
 func handleConfirm(rw http.ResponseWriter, r *http.Request) {
 	blockchain.GetBlockchain().ConfirmBlock()
+	p2p.BroadcastNewBlock(blockchain.GetNewestBlock())
 	rw.WriteHeader(http.StatusCreated)
 }
 
 func handleMempool(rw http.ResponseWriter, r *http.Request) {
-	utils.ErrHandler(json.NewEncoder(rw).Encode(blockchain.GetMempool().Txs))
+	utils.ErrHandler(json.NewEncoder(rw).Encode(blockchain.GetMempoolTx()))
 }
 
 func handleTransactions(rw http.ResponseWriter, r *http.Request) {
 	var payload addTxPayload
 	utils.ErrHandler(json.NewDecoder(r.Body).Decode(&payload))
-	err := blockchain.GetMempool().AddTx(payload.From, payload.To, payload.Amount)
+	tx, err := blockchain.GetMempool().AddTx(payload.To, payload.Amount)
 	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rw).Encode(errorMessage{err.Error()})
 		return
 	}
+	p2p.BroadcastNewTransaction(tx)
 	rw.WriteHeader(http.StatusCreated)
 }
 
@@ -149,10 +152,11 @@ func handlePeer(rw http.ResponseWriter, r *http.Request) {
 	case "POST":
 		var payload addPeerPayload
 		json.NewDecoder(r.Body).Decode(&payload)
-		p2p.AddPeer(payload.Address, payload.Port, portInString)
+		p2p.AddPeer(payload.Address, payload.Port, PortInString[1:], true)
 		rw.WriteHeader(http.StatusOK)
 	case "GET":
 		json.NewEncoder(rw).Encode(p2p.Peers)
+		rw.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -169,9 +173,10 @@ func Start(port int) {
 	router.HandleFunc("/ws", handlerWebsocketUpgrade).Methods("GET")
 	router.HandleFunc("/peer", handlePeer).Methods("GET", "POST")
 
-	portInString = fmt.Sprintf(":%d", port)
-	rootUrlWithPort = fmt.Sprintf("http://localhost%s", portInString)
+	PortInString = fmt.Sprintf(":%d", port)
+	rootUrlWithPort = fmt.Sprintf("http://localhost%s", PortInString)
+	blockchain.SetBlockchainDatabaseFileName(strconv.Itoa(port))
 
 	fmt.Printf("Rest server listening on %s\n", rootUrlWithPort)
-	log.Fatal(http.ListenAndServe(portInString, router))
+	log.Fatal(http.ListenAndServe(PortInString, router))
 }

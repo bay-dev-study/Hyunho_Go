@@ -164,22 +164,26 @@ func MakeTx(from, to string, amount int) (*Tx, error) {
 }
 
 type memoryPool struct {
-	Txs []*Tx
+	Txs   []*Tx
+	mutex sync.Mutex
 }
 
-var mempool *memoryPool
+var mempool = &memoryPool{}
 
 func (m *memoryPool) cleanMempool() {
 	m.Txs = []*Tx{}
 }
 
-func (m *memoryPool) AddTx(from, to string, amount int) error {
-	tx, err := MakeTx(from, to, amount)
+func (m *memoryPool) AddTx(to string, amount int) (*Tx, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	tx, err := MakeTx(wallet.GetWallet().Address, to, amount)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	m.Txs = append(m.Txs, tx)
-	return nil
+	return tx, nil
 }
 
 func isInMempool(txId string) bool {
@@ -194,8 +198,17 @@ func isInMempool(txId string) bool {
 }
 
 func GetMempool() *memoryPool {
-	onceForMempool.Do(func() {
-		mempool = &memoryPool{}
-	})
 	return mempool
+}
+
+func GetMempoolTx() []*Tx {
+	mempool.mutex.Lock()
+	defer mempool.mutex.Unlock()
+	return mempool.Txs
+}
+func (m *memoryPool) AddPeerTx(tx *Tx) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	m.Txs = append(m.Txs, tx)
 }

@@ -2,12 +2,16 @@ package p2p
 
 import (
 	"fmt"
+	"nomad_coin/blockchain"
 	"nomad_coin/utils"
+	"strings"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
 
 var Peers map[string]*Peer = make(map[string]*Peer)
+var peersMutex = sync.Mutex{}
 
 type Peer struct {
 	key     string
@@ -18,6 +22,8 @@ type Peer struct {
 }
 
 func (p *Peer) close() {
+	peersMutex.Lock()
+	defer peersMutex.Unlock()
 	p.conn.Close()
 }
 func (p *Peer) read() {
@@ -25,8 +31,7 @@ func (p *Peer) read() {
 	for {
 		message := &Message{}
 		p.conn.ReadJSON(&message)
-		fmt.Println("received", message)
-		handleMessage(message)
+		handleMessage(message, p)
 	}
 }
 
@@ -41,6 +46,9 @@ func (p *Peer) send() {
 	}
 }
 func InitPeer(conn *websocket.Conn, address, port string) *Peer {
+	peersMutex.Lock()
+	defer peersMutex.Unlock()
+
 	key := fmt.Sprintf("%s:%s", address, port)
 	peer := &Peer{
 		key:     key,
@@ -52,13 +60,37 @@ func InitPeer(conn *websocket.Conn, address, port string) *Peer {
 	Peers[key] = peer
 	go peer.read()
 	go peer.send()
-	sendNewestBlock(peer)
 	return peer
 }
 
-func AddPeer(address, port, openPort string) {
-	uri := fmt.Sprintf("ws://%s:%s/ws?openPort=%s", address, port, openPort[1:])
+func AddPeer(address, port, openPort string, isBroadcast bool) {
+	uri := fmt.Sprintf("ws://%s:%s/ws?openPort=%s", address, port, openPort)
 	conn, _, err := websocket.DefaultDialer.Dial(uri, nil)
 	utils.ErrHandler(err)
-	InitPeer(conn, address, port)
+	peer := InitPeer(conn, address, port)
+	if isBroadcast {
+		broadcastNewPeer(address, port)
+	}
+	sendNewestBlock(peer)
+}
+
+func broadcastNewPeer(address, port string) {
+	for _, peer := range Peers {
+		if strings.Compare(peer.address, address) == 0 && strings.Compare(peer.port, port) == 0 {
+			continue
+		}
+		notifyNewPeer(peer, address, port, peer.port)
+	}
+}
+
+func BroadcastNewBlock(newBlock *blockchain.Block) {
+	for _, peer := range Peers {
+		notifyNewBlock(peer, newBlock)
+	}
+}
+
+func BroadcastNewTransaction(tx *blockchain.Tx) {
+	for _, peer := range Peers {
+		notifyNewTransaction(peer, tx)
+	}
 }

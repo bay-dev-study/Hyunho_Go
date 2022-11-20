@@ -2,12 +2,11 @@ package database
 
 import (
 	"errors"
+	"nomad_coin/utils"
 	"sync"
 
 	bolt "go.etcd.io/bbolt"
 )
-
-const DB_FILE_NAME = "database.db"
 
 type Database struct {
 	database *bolt.DB
@@ -70,6 +69,15 @@ func (db *Database) WriteByteDataToBucket(bucketName string, key string, data []
 		return err
 	}
 	return ErrDatabaseAccessWithoutOpen
+}
+
+func (db *Database) EmptyBucket(bucketName string) {
+	db.database.Update(func(t *bolt.Tx) error {
+		utils.ErrHandler(t.DeleteBucket([]byte(bucketName)))
+		_, err := t.CreateBucket([]byte(bucketName))
+		utils.ErrHandler(err)
+		return nil
+	})
 }
 
 func CloseAllOpenedDB() {

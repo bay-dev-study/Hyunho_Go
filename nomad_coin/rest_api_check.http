@@ -6,22 +6,21 @@ GET http://localhost:4000/status HTTP/1.1
 
 ###
 
-GET http://localhost:4000/blocks HTTP/1.1
+GET http://localhost:3000/blocks HTTP/1.1
 
 ###
 
-POST http://localhost:4000/transactions HTTP/1.1
+POST http://localhost:3000/transactions HTTP/1.1
 content-type: application/json
 
 {
-    "from": "52ca0b29ddf5d29f6d4e27abd3ae64fe4a93daddb6266213070750641fcebd2f095a4d95a1eca87e0a4e3b0566b2177b552857db4f17cbc200f289dd42c40d56",
     "to": "Nico",
     "amount": 20
 }
 
 ###
 
-GET http://localhost:4000/mempool HTTP/1.1
+GET http://localhost:1000/mempool HTTP/1.1
 
 ###
 
@@ -31,7 +30,7 @@ GET http://localhost:4000/balance/52ca0b29ddf5d29f6d4e27abd3ae64fe4a93daddb62662
 GET http://localhost:4000/balance/52ca0b29ddf5d29f6d4e27abd3ae64fe4a93daddb6266213070750641fcebd2f095a4d95a1eca87e0a4e3b0566b2177b552857db4f17cbc200f289dd42c40d56?total=true HTTP/1.1
 
 ###
-GET http://localhost:4000/confirm HTTP/1.1
+GET http://localhost:1000/confirm HTTP/1.1
 
 ###
 GET http://localhost:4000/blocks/0000c2d187723754c1378739c0a7a03d040b6aa499847ed9b14bb2f34265a4bb HTTP/1.1
@@ -43,10 +42,19 @@ GET http://localhost:4000/peer HTTP/1.1
 GET http://localhost:3000/peer HTTP/1.1
 
 ###
-POST http://localhost:4000/peer HTTP/1.1
+POST http://localhost:2000/peer HTTP/1.1
 content-type: application/json
 
 {
     "address": "127.0.0.1",
     "port": "3000"
+}
+
+###
+POST http://localhost:4000/peer HTTP/1.1
+content-type: application/json
+
+{
+    "address": "127.0.0.1",
+    "port": "1000"
 }
