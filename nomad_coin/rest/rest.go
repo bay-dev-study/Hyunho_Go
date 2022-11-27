@@ -8,6 +8,7 @@ import (
 	"nomad_coin/blockchain"
 	"nomad_coin/p2p"
 	"nomad_coin/utils"
+	"nomad_coin/wallet"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -74,7 +75,7 @@ func handleRoot(rw http.ResponseWriter, r *http.Request) {
 func handleStatus(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Add("content-type", "application/json")
 	jsonEncoder := json.NewEncoder(rw)
-	jsonEncoder.Encode(blockchain.GetBlockchain())
+	blockchain.WriteBlockchainToJsonEncoder(jsonEncoder)
 }
 
 func handleBlocks(rw http.ResponseWriter, r *http.Request) {
@@ -112,7 +113,7 @@ func handleBalance(rw http.ResponseWriter, r *http.Request) {
 }
 
 func handleConfirm(rw http.ResponseWriter, r *http.Request) {
-	blockchain.GetBlockchain().ConfirmBlock()
+	blockchain.GetBlockchain().CreateNewBlockFromTx()
 	p2p.BroadcastNewBlock(blockchain.GetNewestBlock())
 	rw.WriteHeader(http.StatusCreated)
 }
@@ -124,12 +125,13 @@ func handleMempool(rw http.ResponseWriter, r *http.Request) {
 func handleTransactions(rw http.ResponseWriter, r *http.Request) {
 	var payload addTxPayload
 	utils.ErrHandler(json.NewDecoder(r.Body).Decode(&payload))
-	tx, err := blockchain.GetMempool().AddTx(payload.To, payload.Amount)
+	tx, err := blockchain.MakeTx(wallet.GetWallet().Address, payload.To, payload.Amount)
 	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rw).Encode(errorMessage{err.Error()})
 		return
 	}
+	blockchain.GetMempool().AddTxToMempool(tx)
 	p2p.BroadcastNewTransaction(tx)
 	rw.WriteHeader(http.StatusCreated)
 }
@@ -155,7 +157,7 @@ func handlePeer(rw http.ResponseWriter, r *http.Request) {
 		p2p.AddPeer(payload.Address, payload.Port, PortInString[1:], true)
 		rw.WriteHeader(http.StatusOK)
 	case "GET":
-		json.NewEncoder(rw).Encode(p2p.Peers)
+		p2p.WritePeersToJsonEncoder(json.NewEncoder(rw))
 		rw.WriteHeader(http.StatusOK)
 	}
 }

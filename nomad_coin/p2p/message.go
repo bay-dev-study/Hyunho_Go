@@ -40,6 +40,7 @@ func sendAllBlocks(p *Peer) {
 
 func sendNewestBlock(p *Peer) {
 	block := blockchain.GetNewestBlock()
+	fmt.Println("Sending newest block", block)
 	p.inbox <- makeBytesMessage(MessageNewestBlock, block)
 }
 
@@ -95,7 +96,7 @@ func handleMessage(message *Message, peer *Peer) {
 		var newTx *blockchain.Tx
 		err := json.Unmarshal(message.Payload, &newTx)
 		utils.ErrHandler(err)
-		blockchain.GetMempool().AddPeerTx(newTx)
+		blockchain.GetMempool().AddTxToMempool(newTx)
 
 	}
 }

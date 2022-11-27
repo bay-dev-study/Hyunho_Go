@@ -1,6 +1,7 @@
 package p2p
 
 import (
+	"encoding/json"
 	"fmt"
 	"nomad_coin/blockchain"
 	"nomad_coin/utils"
@@ -10,8 +11,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var Peers map[string]*Peer = make(map[string]*Peer)
-var peersMutex = sync.Mutex{}
+type PeersMap struct {
+	Peers map[string]*Peer
+	mutex sync.Mutex
+}
+
+var PeersMapInstance = PeersMap{Peers: make(map[string]*Peer)}
 
 type Peer struct {
 	key     string
@@ -21,16 +26,29 @@ type Peer struct {
 	inbox   chan []byte
 }
 
+func WritePeersToJsonEncoder(encoder *json.Encoder) {
+	PeersMapInstance.mutex.Lock()
+	defer PeersMapInstance.mutex.Unlock()
+
+	encoder.Encode(PeersMapInstance.Peers)
+}
+
 func (p *Peer) close() {
-	peersMutex.Lock()
-	defer peersMutex.Unlock()
+	PeersMapInstance.mutex.Lock()
+	defer PeersMapInstance.mutex.Unlock()
+
+	delete(PeersMapInstance.Peers, p.key)
 	p.conn.Close()
 }
+
 func (p *Peer) read() {
 	defer p.close()
 	for {
 		message := &Message{}
-		p.conn.ReadJSON(&message)
+		err := p.conn.ReadJSON(&message)
+		if err != nil {
+			break
+		}
 		handleMessage(message, p)
 	}
 }
@@ -46,8 +64,8 @@ func (p *Peer) send() {
 	}
 }
 func InitPeer(conn *websocket.Conn, address, port string) *Peer {
-	peersMutex.Lock()
-	defer peersMutex.Unlock()
+	PeersMapInstance.mutex.Lock()
+	defer PeersMapInstance.mutex.Unlock()
 
 	key := fmt.Sprintf("%s:%s", address, port)
 	peer := &Peer{
@@ -57,25 +75,29 @@ func InitPeer(conn *websocket.Conn, address, port string) *Peer {
 		conn:    conn,
 		inbox:   make(chan []byte),
 	}
-	Peers[key] = peer
+	PeersMapInstance.Peers[key] = peer
 	go peer.read()
 	go peer.send()
+
+	sendNewestBlock(peer)
 	return peer
 }
 
-func AddPeer(address, port, openPort string, isBroadcast bool) {
+func AddPeer(address, port, openPort string, needToBroadcast bool) {
 	uri := fmt.Sprintf("ws://%s:%s/ws?openPort=%s", address, port, openPort)
 	conn, _, err := websocket.DefaultDialer.Dial(uri, nil)
 	utils.ErrHandler(err)
-	peer := InitPeer(conn, address, port)
-	if isBroadcast {
+	InitPeer(conn, address, port)
+	if needToBroadcast {
 		broadcastNewPeer(address, port)
 	}
-	sendNewestBlock(peer)
 }
 
 func broadcastNewPeer(address, port string) {
-	for _, peer := range Peers {
+	PeersMapInstance.mutex.Lock()
+	defer PeersMapInstance.mutex.Unlock()
+
+	for _, peer := range PeersMapInstance.Peers {
 		if strings.Compare(peer.address, address) == 0 && strings.Compare(peer.port, port) == 0 {
 			continue
 		}
@@ -84,13 +106,19 @@ func broadcastNewPeer(address, port string) {
 }
 
 func BroadcastNewBlock(newBlock *blockchain.Block) {
-	for _, peer := range Peers {
+	PeersMapInstance.mutex.Lock()
+	defer PeersMapInstance.mutex.Unlock()
+
+	for _, peer := range PeersMapInstance.Peers {
 		notifyNewBlock(peer, newBlock)
 	}
 }
 
 func BroadcastNewTransaction(tx *blockchain.Tx) {
-	for _, peer := range Peers {
+	PeersMapInstance.mutex.Lock()
+	defer PeersMapInstance.mutex.Unlock()
+
+	for _, peer := range PeersMapInstance.Peers {
 		notifyNewTransaction(peer, tx)
 	}
 }

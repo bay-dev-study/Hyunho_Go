@@ -4,10 +4,7 @@ import (
 	"errors"
 	"nomad_coin/utils"
 	"nomad_coin/wallet"
-	"sync"
 )
-
-var onceForMempool sync.Once
 
 var ErrNotEnoughBalance = errors.New("not enough balance")
 
@@ -18,15 +15,6 @@ type Tx struct {
 	Timestamp int      `json:"timestamp"`
 	TxIns     []*TxIn  `json:"txIns"`
 	TxOuts    []*TxOut `json:"txOuts"`
-}
-
-func (tx *Tx) makeTxID() {
-	tx.TxId = utils.HashObject(tx)
-}
-func (tx *Tx) signTxIns() {
-	for _, txIn := range tx.TxIns {
-		txIn.Signature = wallet.Sign(tx.TxId, wallet.GetWallet())
-	}
 }
 
 type TxIn struct {
@@ -46,6 +34,35 @@ type UTxOut struct {
 	Amount int    `json:"amount"`
 }
 
+type usedTxOutsFlag map[string]bool
+
+func (tx *Tx) makeTxID() {
+	tx.TxId = utils.HashObject(tx)
+}
+
+func (tx *Tx) signTxIns() {
+	for _, txIn := range tx.TxIns {
+		txIn.Signature = wallet.Sign(tx.TxId, wallet.GetWallet())
+	}
+}
+
+func findTxWithTxId(TxId string) *Tx {
+	for _, tx := range getAllTx() {
+		if tx.TxId == TxId {
+			return tx
+		}
+	}
+	return nil
+}
+
+func getAllTx() []*Tx {
+	tx_slice := []*Tx{}
+	for _, block := range AllBlocks() {
+		tx_slice = append(tx_slice, block.Transactions...)
+	}
+	return tx_slice
+}
+
 func makeCoinbaseTx(to string, amount int) *Tx {
 	txIn := TxIn{"", -1, "COINBASE"}
 	txOut := TxOut{to, amount}
@@ -53,8 +70,6 @@ func makeCoinbaseTx(to string, amount int) *Tx {
 	tx.makeTxID()
 	return &tx
 }
-
-type usedTxOutsFlag map[string]bool
 
 func checkUsedTxOuts(address string) usedTxOutsFlag {
 	allBlocks := AllBlocks()
@@ -161,54 +176,4 @@ func MakeTx(from, to string, amount int) (*Tx, error) {
 		return nil, ErrInvalidSignature
 	}
 	return tx, nil
-}
-
-type memoryPool struct {
-	Txs   []*Tx
-	mutex sync.Mutex
-}
-
-var mempool = &memoryPool{}
-
-func (m *memoryPool) cleanMempool() {
-	m.Txs = []*Tx{}
-}
-
-func (m *memoryPool) AddTx(to string, amount int) (*Tx, error) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
-	tx, err := MakeTx(wallet.GetWallet().Address, to, amount)
-	if err != nil {
-		return nil, err
-	}
-	m.Txs = append(m.Txs, tx)
-	return tx, nil
-}
-
-func isInMempool(txId string) bool {
-	for _, tx := range GetMempool().Txs {
-		for _, txIn := range tx.TxIns {
-			if txId == txIn.TxId {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func GetMempool() *memoryPool {
-	return mempool
-}
-
-func GetMempoolTx() []*Tx {
-	mempool.mutex.Lock()
-	defer mempool.mutex.Unlock()
-	return mempool.Txs
-}
-func (m *memoryPool) AddPeerTx(tx *Tx) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
-	m.Txs = append(m.Txs, tx)
 }
