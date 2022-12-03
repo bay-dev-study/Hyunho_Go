@@ -9,14 +9,18 @@ import (
 	"time"
 )
 
+var LogFn = log.Panic
+
 func ErrHandler(err error) {
 	if err != nil {
-		log.Panic(err)
+		LogFn(err)
 	}
 }
 
+var timeNowFn = time.Now
+
 func GetNowUnixTimestamp() int {
-	return int(time.Now().Unix())
+	return int(timeNowFn().Unix())
 }
 
 func HashObject(i interface{}) string {
