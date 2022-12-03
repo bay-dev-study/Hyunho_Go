@@ -68,6 +68,7 @@ func InitPeer(conn *websocket.Conn, address, port string) *Peer {
 	defer PeersMapInstance.mutex.Unlock()
 
 	key := fmt.Sprintf("%s:%s", address, port)
+	fmt.Printf("New peer connected %s\n", key)
 	peer := &Peer{
 		key:     key,
 		address: address,

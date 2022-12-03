@@ -37,7 +37,7 @@ func getBlockchainDB() *blockchainDB {
 func saveNewBlockToDB(newBlock *Block) {
 	getBlockchainDB().mutex.Lock()
 	defer getBlockchainDB().mutex.Unlock()
-	defer fmt.Println("block saved", newBlock)
+	// defer fmt.Println("block saved")
 
 	byteBlockDataToSave, err := utils.ObjectToBytes(&newBlock)
 	utils.ErrHandler(err)

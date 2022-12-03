@@ -63,6 +63,7 @@ func handleMessage(message *Message, peer *Peer) {
 		err := json.Unmarshal(message.Payload, &newestBlock)
 		utils.ErrHandler(err)
 		recentBlockHeight := blockchain.GetNewestBlock().Height
+		fmt.Printf("Block received (height = %d)\n", recentBlockHeight)
 		if newestBlock.Height > recentBlockHeight {
 			fmt.Printf("Requesting all blocks from %s\n", peer.key)
 			requestAllBlocks(peer)
@@ -83,6 +84,7 @@ func handleMessage(message *Message, peer *Peer) {
 		var addPeerPayload string
 		err := json.Unmarshal(message.Payload, &addPeerPayload)
 		utils.ErrHandler(err)
+		fmt.Printf("New peer notified %s\n", addPeerPayload)
 		addPeerPayloadSlice := strings.Split(addPeerPayload, ":")
 		AddPeer(addPeerPayloadSlice[0], addPeerPayloadSlice[1], addPeerPayloadSlice[2], false)
 
@@ -90,12 +92,14 @@ func handleMessage(message *Message, peer *Peer) {
 		var newBlock *blockchain.Block
 		err := json.Unmarshal(message.Payload, &newBlock)
 		utils.ErrHandler(err)
+		fmt.Println("New block notified")
 		blockchain.GetBlockchain().AddPeerBlock(newBlock)
 
 	case MessageNewTransactionNotify:
 		var newTx *blockchain.Tx
 		err := json.Unmarshal(message.Payload, &newTx)
 		utils.ErrHandler(err)
+		fmt.Println("New transaction notified")
 		blockchain.GetMempool().AddTxToMempool(newTx)
 
 	}
